@@ -1,8 +1,10 @@
 #include <unicorn/unicorn.h>
 #include <string.h>
+#include <stdint.h>
 
-#define BASE_ADDRESS 0x000a2380
-char function[] = {
+#define BASE_ADDRESS 0x00000000000a2380
+#define STACK_TOP    0x55aa55aa0000fffc
+char function[] = {  // glibc-2.34-40.el9.x86_64_libc: __pthread_mutex_lock_full   0x00000000000A2380
 	'\x41','\x57','\x41','\x56','\x41','\x55','\x41','\x54','\x55','\x48','\x89','\xfd','\x53','\x48','\x83','\xec',
 	'\x28','\x64','\x48','\x8b','\x04','\x25','\x28','\x00','\x00','\x00','\x48','\x89','\x44','\x24','\x18','\x31',
 	'\xc0','\x64','\x8b','\x04','\x25','\xd0','\x02','\x00','\x00','\x89','\x44','\x24','\x0c','\x8b','\x57','\x10',
@@ -125,40 +127,144 @@ char function[] = {
 	'\xba','\x4e','\x02','\x00','\x00','\x48','\x8d','\x35','\x35','\x65','\x11','\x00','\x48','\x8d','\x3d','\x59',
 	'\x65','\x11','\x00','\xe8','\x18','\xb1','\xfa','\xff'
 	};
+	uint64_t prec_pc;
+	char *coverage_map;
 
-static void test_func(void) {
+
+static bool hook_mem_invalid(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
+	switch (type) {
+	default:
+		printf(">>> Missing memory is being READ at 0x%08lx data size = %u\n", address, size);
+		printf(">>> allocate 64k at 0x%08lx\n", address & 0xffffffffffff0000);
+		uc_mem_map(uc, address & 0xffffffffffff0000, 64 * 1024, UC_PROT_ALL);
+		return true;
+	case UC_MEM_WRITE_UNMAPPED:
+		printf(">>> Missing memory is being WRITE at 0x%08lx data size = %u, data value = 0x%08lx\n", address, size, value);
+		printf(">>> allocate 64k at 0x%08lx\n", address & 0xffffffffffff0000);
+		uc_mem_map(uc, address & 0xffffffffffff0000, 64 * 1024, UC_PROT_ALL);
+		return true;
+	}
+}
+
+static bool hook_instruction(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
+	uint64_t pc;
+	int i;
+
+	uc_reg_read(uc, UC_X86_REG_RIP, &pc);
+	printf("executed 0x%08lx\n", pc);
+	return true;
+}
+static void  hook_mem_fetch_check(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
+	int i;
+
+	printf("]] read at 0x%08lx\n", address);
+	if ((address >=BASE_ADDRESS) && (address<=BASE_ADDRESS + sizeof(function) - 1)) {
+		for (i=address; i<address+size; i++){
+			*(coverage_map+address-BASE_ADDRESS)=1;
+			}
+		}
+}
+
+static void hook_block(uc_engine *uc, uint64_t address, uint32_t size, void *user_data) {
+	uint64_t pc,i;
+
+	uc_reg_read(uc, UC_X86_REG_RIP, &pc);
+        printf("block at 0x%08lx size=0x%x   [current pc=0x%08lx]\n", address, size, pc);
+	if ((address >= BASE_ADDRESS) && (address <= BASE_ADDRESS + sizeof(function) - 1)) {
+		for (i=address; i<address+size; i++) *(coverage_map+i-BASE_ADDRESS)=1;
+		}
+	if (!((address >= BASE_ADDRESS) && (address <= BASE_ADDRESS + sizeof(function) - 1))) uc_emu_stop(uc);
+}
+
+
+int main(int argc, char **argv, char **envp) {
 	uc_engine *uc;
 	uc_err err;
-	uc_hook trace1, trace2;
+	uc_hook trace1, trace2, trace3;
+	uint64_t reg;
+	int i;
+	bool started=false;
 
 	printf("===================================\n");
+	printf("initializing coverage map\n");
+	coverage_map =(char *)malloc(sizeof(function));
+	memset(coverage_map, 0, sizeof(function));
+
 	err = uc_open(UC_ARCH_X86, UC_MODE_64, &uc);
 	if (err) {
 		printf("Failed on uc_open() with error returned: %u\n", err);
-		return;
+		return 1;
 		}
-	printf("2MB allocating at 0x%08x\n", BASE_ADDRESS&(4*1024-1));
+	printf("2MB allocating at 0x%08x to host the code\n", BASE_ADDRESS&(4*1024-1));
 	uc_mem_map(uc, 0x000a0000, 2 * 1024 * 1024, UC_PROT_ALL);
+
+	// allocate 64k stack
+	printf("64KB allocating at 0x%08lx and set stack register at 0x%08lx\n", STACK_TOP & 0xffffffffffff0000, STACK_TOP);
+	uc_mem_map(uc, STACK_TOP & 0xffffffffffff0000, 64 * 1024, UC_PROT_ALL);
+	reg=STACK_TOP;
+	uc_reg_write(uc, UC_X86_REG_RSP, &reg);
+
+
 	printf("writing function at 0x%08x for %ld bytes\n", BASE_ADDRESS,sizeof(function));
 	if (uc_mem_write(uc, BASE_ADDRESS, function, sizeof(function))) {
 		printf("Failed to write emulation code to memory, quit!\n");
-		return;
+		return 1;
 		}
 
-//	uc_hook_add(uc, &trace1, UC_HOOK_BLOCK, hook_block, NULL, ADDRESS, ADDRESS);
+	printf("Add hook on memory unmapped events\n");
+	uc_hook_add(uc, &trace1, UC_HOOK_MEM_READ_UNMAPPED | UC_HOOK_MEM_WRITE_UNMAPPED, hook_mem_invalid, NULL, 1, 0);
+
+//	printf("Add hook on single instruction\n");
+//	err=uc_hook_add(uc, &trace2, UC_HOOK_CODE, hook_instruction, NULL, 1, 0);
+//	printf("UC_HOOK_CODE, -> %d\n", err);
+//	err=uc_hook_add(uc, &trace3, UC_HOOK_MEM_READ, hook_mem_fetch_check, NULL, BASE_ADDRESS, BASE_ADDRESS + sizeof(function) - 1);
+//	printf("UC_HOOK_MEM_READ -> %d\n", err);
+
+	uc_hook_add(uc, &trace1, UC_HOOK_BLOCK, hook_block, NULL, 1, 0);
 
 	err = uc_emu_start(uc, BASE_ADDRESS, BASE_ADDRESS + sizeof(function) - 1, 0, 0);
 	if (err) {
-		printf("Failed on uc_emu_start() with error returned %u: %s\n", err,
-		uc_strerror(err));
+		printf("Failed on uc_emu_start() with error returned %u: %s\n", err, uc_strerror(err));
 		}
 
 	printf(">>> Emulation done. Below is the CPU context\n");
 
-	uc_close(uc);
-}
+	uc_reg_read(uc, UC_X86_REG_RAX, &reg);
+	printf(">>> RAX = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RBX, &reg);
+	printf(">>> RBX = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RCX, &reg);
+	printf(">>> RCX = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RDX, &reg);
+	printf(">>> RDX = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RSI, &reg);
+	printf(">>> RSI = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RDI, &reg);
+	printf(">>> RDI = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R8, &reg);
+	printf(">>> R8 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R9, &reg);
+	printf(">>> R9 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R10, &reg);
+	printf(">>> R10 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R11, &reg);
+	printf(">>> R11 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R12, &reg);
+	printf(">>> R12 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R13, &reg);
+	printf(">>> R13 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R14, &reg);
+	printf(">>> R14 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R15, &reg);
+	printf(">>> R15 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RSP, &reg);
+	printf(">>> RSP = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RIP, &reg);
+	printf(">>> RIP = 0x%lx\n", reg);
+	printf("code coverage map\n");
+	for (i=0; i<sizeof(function) - 1; i++) printf("%d", *(coverage_map+i));
+	printf("\n");
 
-int main(int argc, char **argv, char **envp) {
-	test_func();
-	return 0;
+
+	uc_close(uc);
 }
