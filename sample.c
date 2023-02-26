@@ -1,4 +1,5 @@
 #include <unicorn/unicorn.h>
+#include <capstone/capstone.h>
 #include <string.h>
 #include <stdint.h>
 
@@ -167,7 +168,21 @@ static void  hook_mem_fetch_check(uc_engine *uc, uc_mem_type type, uint64_t addr
 
 static void hook_block(uc_engine *uc, uint64_t address, uint32_t size, void *user_data) {
 	uint64_t pc,i;
+	csh handle;
+	cs_insn *insn;
+	size_t count;
 
+	if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK) uc_emu_stop(uc);
+	count = cs_disasm(handle, (uint8_t *) (function+(address-BASE_ADDRESS)), size, address, 0, &insn);
+	if (count > 0) {
+		size_t j;
+		for (j = 0; j < count; j++) {
+			printf("0x%"PRIx64":\t%s\t\t%s\n", insn[j].address, insn[j].mnemonic, insn[j].op_str);
+			}
+
+		cs_free(insn, count);
+		}
+	cs_close(&handle);
 	uc_reg_read(uc, UC_X86_REG_RIP, &pc);
         printf("block at 0x%08lx size=0x%x   [current pc=0x%08lx]\n", address, size, pc);
 	if ((address >= BASE_ADDRESS) && (address <= BASE_ADDRESS + sizeof(function) - 1)) {
