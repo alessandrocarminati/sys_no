@@ -174,11 +174,18 @@ static void hook_block(uc_engine *uc, uint64_t address, uint32_t size, void *use
 
 	if (((address >= BASE_ADDRESS) && (address <= BASE_ADDRESS + sizeof(function) - 1))) {
 		if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK) uc_emu_stop(uc);
+		cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 		count = cs_disasm(handle, (uint8_t *) (function+(address-BASE_ADDRESS)), size, address, 0, &insn);
 		if (count > 0) {
 			size_t j;
 			for (j = 0; j < count; j++) {
-				printf("0x%"PRIx64":\t%s\t\t%s\n", insn[j].address, insn[j].mnemonic, insn[j].op_str);
+				printf("0x%08lx\n",insn[j].detail);
+				printf("0x%"PRIx64":\t%s\t\t%s grp:%d,%d,%d,%d\n", insn[j].address, insn[j].mnemonic, insn[j].op_str, 
+					insn[j].detail->groups[0],
+					insn[j].detail->groups[1],
+					insn[j].detail->groups[2],
+					insn[j].detail->groups[3]
+					);
 				}
 			cs_free(insn, count);
 			}
