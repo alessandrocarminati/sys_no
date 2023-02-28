@@ -15,7 +15,7 @@ struct Block {
 	uint32_t branch_addr, forward_addr;
 };
 
-struct Block *list_blocks(unsigned char *code, size_t code_size, uint64_t start_address) {
+struct Block *build_cfg(unsigned char *code, size_t code_size, uint64_t start_address) {
 	csh handle;
 	cs_insn *insn;
 	size_t count;
@@ -166,7 +166,7 @@ char *print_dot(struct Block *root){
 
 int main(){
 	struct Block *root;
-	root=list_blocks(function, sizeof(function), BASE_ADDRESS);
+	root=build_cfg(function, sizeof(function), BASE_ADDRESS);
 	print_list(root);
 	printf("%s", print_dot(root));
 }
