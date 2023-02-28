@@ -113,7 +113,7 @@ if (app) printf("link 0x%08x and 0x%08x\n", current->start, app->start); else pr
 }
 
 
-void print_list(struct Block *root){
+void print_plain_cfg(struct Block *root){
 	struct Block *app;
 
 	DL_FOREACH(root,app)  printf("Block: Start=0x%08x, End=0x%08x, Syscall=%d, Next-Forward=0x%08x, Next-branch=0x%08x\n", app->start, app->end, app->syscall, app->forward_addr, app->branch_addr);
@@ -167,6 +167,6 @@ char *print_dot(struct Block *root){
 int main(){
 	struct Block *root;
 	root=build_cfg(function, sizeof(function), BASE_ADDRESS);
-	print_list(root);
+	print_plain_cfg(root);
 	printf("%s", print_dot(root));
 }
