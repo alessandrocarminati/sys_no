@@ -113,10 +113,60 @@ if (app) printf("link 0x%08x and 0x%08x\n", current->start, app->start); else pr
 }
 
 
+void print_list(struct Block *root){
+	struct Block *app;
+
+	DL_FOREACH(root,app)  printf("Block: Start=0x%08x, End=0x%08x, Syscall=%d, Next-Forward=0x%08x, Next-branch=0x%08x\n", app->start, app->end, app->syscall, app->forward_addr, app->branch_addr);
+}
+
+static bool not_visited(uint64_t c, uint64_t visited[], int visited_no){
+	int i;
+
+	for (i=0; i<visited_no; i++) {
+		if (visited[i]== c) return false;
+		}
+	return true;
+}
+
+static void _print_dot(struct Block *current, char *dot, int *dot_len, uint64_t visited[], int *visited_no){
+
+	visited[(*visited_no)++]=current->start;
+
+	if (current->syscall) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" [shape=box style=filled fillcolor=green]\n", current->start);
+
+	if (current->forward) {
+		(*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" -> \"0x%08x\"\n", current->start, current->forward->start);
+		if (not_visited(current->forward->start, visited, (*visited_no))) {
+			_print_dot(current->forward, dot, dot_len, visited, visited_no);
+			}
+		}
+	if (current->branch) {
+		(*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" -> \"0x%08x\"[color=red]\n", current->start, current->branch->start);
+//		(*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, "{ rank=same \"0x%08lx\" \"0x%08x\" }\n", current->start, current->branch->start);
+		if (not_visited(current->branch->start, visited, (*visited_no))) {
+			_print_dot(current->branch, dot, dot_len, visited, visited_no);
+			}
+		}
+//printf("_print_dot - 10 [0x%08x] -> %s\n", current->start, dot);
+
+}
+
+char *print_dot(struct Block *root){
+	char *dot;
+	uint64_t visited[MAX_BLOCS];
+	int dot_len=0, visited_no=0;
+
+	dot= (char *) malloc(DOT_BUF_SIZE);
+	dot_len += snprintf(dot+dot_len, DOT_BUF_SIZE, "digraph G {\n");
+	_print_dot(root, dot, &dot_len, visited, &visited_no);
+	dot_len += snprintf(dot+dot_len, DOT_BUF_SIZE, "}\n");
+	return dot;
+}
+
 
 int main(){
-	struct Block *root, *app;
-
+	struct Block *root;
 	root=list_blocks(function, sizeof(function), BASE_ADDRESS);
-	DL_FOREACH(root,app)  printf("Block: Start=0x%08x, End=0x%08x, Syscall=%d, Next-Forward=0x%08x, Next-branch=0x%08x\n", app->start, app->end, app->syscall, app->forward_addr, app->branch_addr);
+	print_list(root);
+	printf("%s", print_dot(root));
 }
