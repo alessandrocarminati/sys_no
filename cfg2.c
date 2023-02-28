@@ -8,7 +8,6 @@
 #include "consts.h"
 
 struct Block {
-//	struct list_head node;
 	int start;
 	int end;
 	bool syscall;
@@ -22,6 +21,7 @@ struct Block *list_blocks(unsigned char *code, size_t code_size, uint64_t start_
 	size_t count;
 	struct Block *first=NULL, *current, *app;
 	int i;
+	bool found;
 
 
 	 if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK) {
@@ -67,8 +67,9 @@ struct Block *list_blocks(unsigned char *code, size_t code_size, uint64_t start_
 			if (i+1 < count) {
 				if (insn[i].id != X86_INS_JMP) current->forward_addr=insn[i+1].address;
 				if ((app=(struct Block *) malloc(sizeof(struct Block)))==NULL){
-					printf("malloc error\n");
-					return NULL;
+					printf("Error Allocating memory\n");
+					// TODO: check list and remove allocated stuff
+					return 0;
 					};
 				memset(app, 0, sizeof(struct Block));
 				app->start=insn[i+1].address;
@@ -83,12 +84,29 @@ struct Block *list_blocks(unsigned char *code, size_t code_size, uint64_t start_
 	cs_free(insn, count);
 	cs_close(&handle);
 
-
 	DL_FOREACH(first,current) {
-		DL_SEARCH_SCALAR(first,app,start,current->branch_addr);
-		current->branch=app;
-		DL_SEARCH_SCALAR(first,app,start,current->forward_addr);
-		current->forward=app;
+		found=false;
+		DL_FOREACH(first,app){
+			if ((current->branch_addr >= app->start) && (current->branch_addr <= app->end)) {
+				found=true;
+				break;
+				}
+			}
+		current->branch = found?app:NULL;
+#ifdef DEBUG
+if (app) printf("link 0x%08x and 0x%08x\n", current->start, app->start); else printf("branch 0x%08x not found\n", current->branch_addr);
+#endif
+		found=false;
+		DL_FOREACH(first,app){
+			if ((current->forward_addr >= app->start) && (current->forward_addr <= app->end)) {
+				found=true;
+				break;
+				}
+			}
+		current->forward=found?app:NULL;
+#ifdef DEBUG
+if (app) printf("link 0x%08x and 0x%08x\n", current->start, app->start); else printf("forward 0x%08x not found\n", current->forward_addr);
+#endif
 		}
 
 	return first;
