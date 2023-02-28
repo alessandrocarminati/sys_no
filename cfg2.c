@@ -151,7 +151,7 @@ static void _print_dot(struct Block *current, char *dot, int *dot_len, uint64_t 
 
 }
 
-char *print_dot(struct Block *root){
+char *cfg2dot(struct Block *root){
 	char *dot;
 	uint64_t visited[MAX_BLOCS];
 	int dot_len=0, visited_no=0;
@@ -168,5 +168,5 @@ int main(){
 	struct Block *root;
 	root=build_cfg(function, sizeof(function), BASE_ADDRESS);
 	print_plain_cfg(root);
-	printf("%s", print_dot(root));
+	printf("%s", cfg2dot(root));
 }
