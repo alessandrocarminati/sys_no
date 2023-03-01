@@ -16,6 +16,11 @@ struct Block {
 	uint32_t branch_addr, forward_addr;
 };
 
+struct block_list {
+	uint64_t blocks[MAX_BLOCS];
+	int	blocks_no;
+};
+
 struct Block *build_cfg(unsigned char *code, size_t code_size, uint64_t start_address) {
 	csh handle;
 	cs_insn *insn;
@@ -139,30 +144,28 @@ static void _print_dot(struct Block *current, char *dot, int *dot_len, uint64_t 
 	if (current->ret) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" [shape=box style=filled fillcolor=red]\n", current->start);
 
 	if (current->forward) {
-		(*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" -> \"0x%08x\"\n", current->start, current->forward->start);
+		if (!current->ret) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" -> \"0x%08x\"\n", current->start, current->forward->start);
 		if (not_visited(current->forward->start, visited, (*visited_no))) {
 			_print_dot(current->forward, dot, dot_len, visited, visited_no);
 			}
 		}
 	if (current->branch) {
 		(*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" -> \"0x%08x\"[color=red]\n", current->start, current->branch->start);
-//		(*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, "{ rank=same \"0x%08lx\" \"0x%08x\" }\n", current->start, current->branch->start);
 		if (not_visited(current->branch->start, visited, (*visited_no))) {
 			_print_dot(current->branch, dot, dot_len, visited, visited_no);
 			}
 		}
-//printf("_print_dot - 10 [0x%08x] -> %s\n", current->start, dot);
 
 }
 
 char *cfg2dot(struct Block *root){
 	char *dot;
-	uint64_t visited[MAX_BLOCS];
-	int dot_len=0, visited_no=0;
+	struct block_list visited = {.blocks_no=0};
+	int dot_len=0;
 
 	dot= (char *) malloc(DOT_BUF_SIZE);
 	dot_len += snprintf(dot+dot_len, DOT_BUF_SIZE, "digraph G {\n");
-	_print_dot(root, dot, &dot_len, visited, &visited_no);
+	_print_dot(root, dot, &dot_len, visited.blocks, &(visited.blocks_no));
 	dot_len += snprintf(dot+dot_len, DOT_BUF_SIZE, "}\n");
 	return dot;
 }
