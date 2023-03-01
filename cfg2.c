@@ -10,7 +10,8 @@
 struct Block {
 	int start;
 	int end;
-	bool syscall;
+	unsigned int syscall : 1;
+	unsigned int ret : 1;
 	struct Block *branch, *forward, *next, *prev;
 	uint32_t branch_addr, forward_addr;
 };
@@ -45,13 +46,15 @@ struct Block *build_cfg(unsigned char *code, size_t code_size, uint64_t start_ad
 	DL_APPEND(first, current);
 
 	current->start=insn[0].address;
-	current->syscall=false;
+	current->syscall=0;
+	current->ret=0;
 	current->branch_addr=0;
 	current->forward_addr=0;
 
 	// iterate all instructions
 	for (i = 0; i < count; i++) {
-		if (cs_insn_group(handle, &insn[i], CS_GRP_INT)) current->syscall=true;
+		if (cs_insn_group(handle, &insn[i], CS_GRP_INT)) current->syscall=1;
+		if (cs_insn_group(handle, &insn[i], CS_GRP_RET)) current->ret=1;
 		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP) || cs_insn_group(handle, &insn[i], CS_GRP_CALL)) {
 			current->end=insn[i].address;
 			cs_x86_op *op = &(insn[i].detail->x86.operands[0]);
@@ -133,6 +136,7 @@ static void _print_dot(struct Block *current, char *dot, int *dot_len, uint64_t 
 	visited[(*visited_no)++]=current->start;
 
 	if (current->syscall) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" [shape=box style=filled fillcolor=green]\n", current->start);
+	if (current->ret) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" [shape=box style=filled fillcolor=red]\n", current->start);
 
 	if (current->forward) {
 		(*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" -> \"0x%08x\"\n", current->start, current->forward->start);
