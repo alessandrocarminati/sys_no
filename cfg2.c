@@ -17,7 +17,7 @@ struct Block {
 };
 
 struct block_list {
-	uint64_t blocks[MAX_BLOCS];
+	uint64_t *blocks;
 	int	blocks_no;
 };
 
@@ -158,11 +158,14 @@ static void _print_dot(struct Block *current, char *dot, int *dot_len, uint64_t 
 
 }
 
+
+//dot output is provided in an allocated memory. User is required to free it up as needed.
 char *cfg2dot(struct Block *root){
 	char *dot;
 	struct block_list visited = {.blocks_no=0};
 	int dot_len=0;
 
+	visited.blocks=(uint64_t *) malloc(MAX_BLOCS*sizeof(uint64_t));
 	dot= (char *) malloc(DOT_BUF_SIZE);
 	dot_len += snprintf(dot+dot_len, DOT_BUF_SIZE, "digraph G {\n");
 	_print_dot(root, dot, &dot_len, visited.blocks, &(visited.blocks_no));
