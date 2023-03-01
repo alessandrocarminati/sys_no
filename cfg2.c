@@ -136,26 +136,26 @@ static bool not_visited(uint64_t c, uint64_t visited[], int visited_no){
 	return true;
 }
 
-static void _print_dot(struct Block *current, char *dot, int *dot_len, uint64_t visited[], int *visited_no){
+static int _print_dot(struct Block *current, char *dot, int *dot_len, uint64_t visited[], int *visited_no){
 
 	visited[(*visited_no)++]=current->start;
 
-	if (current->syscall) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" [shape=box style=filled fillcolor=green]\n", current->start);
-	if (current->ret) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" [shape=box style=filled fillcolor=red]\n", current->start);
+	if (current->syscall) if (DOT_BUF_SIZE-*dot_len>0) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE-*dot_len, " \"0x%08x\" [shape=box style=filled fillcolor=green]\n", current->start);
+	if (current->ret)  if (DOT_BUF_SIZE-*dot_len>0) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE-*dot_len, " \"0x%08x\" [shape=box style=filled fillcolor=red]\n", current->start);
 
 	if (current->forward) {
-		if (!current->ret) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" -> \"0x%08x\"\n", current->start, current->forward->start);
+		if (!current->ret)  if (DOT_BUF_SIZE-*dot_len>0) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE-*dot_len, " \"0x%08x\" -> \"0x%08x\"\n", current->start, current->forward->start);
 		if (not_visited(current->forward->start, visited, (*visited_no))) {
 			_print_dot(current->forward, dot, dot_len, visited, visited_no);
 			}
 		}
 	if (current->branch) {
-		(*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE, " \"0x%08x\" -> \"0x%08x\"[color=red]\n", current->start, current->branch->start);
+		 if (DOT_BUF_SIZE-*dot_len>0) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE-*dot_len, " \"0x%08x\" -> \"0x%08x\"[color=red]\n", current->start, current->branch->start);
 		if (not_visited(current->branch->start, visited, (*visited_no))) {
 			_print_dot(current->branch, dot, dot_len, visited, visited_no);
 			}
 		}
-
+	return DOT_BUF_SIZE-*dot_len>0?NO_ERROR:ERR_BUFOVF;
 }
 
 
@@ -163,14 +163,15 @@ static void _print_dot(struct Block *current, char *dot, int *dot_len, uint64_t 
 char *cfg2dot(struct Block *root){
 	char *dot;
 	struct block_list visited = {.blocks_no=0};
-	int dot_len=0;
+	int err, dot_len=0;
 
 	visited.blocks=(uint64_t *) malloc(MAX_BLOCS*sizeof(uint64_t));
 	dot= (char *) malloc(DOT_BUF_SIZE);
-	dot_len += snprintf(dot+dot_len, DOT_BUF_SIZE, "digraph G {\n");
-	_print_dot(root, dot, &dot_len, visited.blocks, &(visited.blocks_no));
-	dot_len += snprintf(dot+dot_len, DOT_BUF_SIZE, "}\n");
-	return dot;
+	dot_len += snprintf(dot+dot_len, DOT_BUF_SIZE-dot_len, "digraph G {\n");
+	err=_print_dot(root, dot, &dot_len, visited.blocks, &(visited.blocks_no));
+	dot_len += snprintf(dot+dot_len, DOT_BUF_SIZE-dot_len, "}\n");
+	free(visited.blocks);
+	return err==NO_ERROR?dot:ERR_BUFOVF_MSG;
 }
 
 
