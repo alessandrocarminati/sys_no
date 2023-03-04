@@ -87,6 +87,7 @@ struct Block *build_cfg(struct exec_item *f) {
 
 	// iterate all instructions
 	for (i = 0; i < count; i++) {
+		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) DBG_PRINT("0x%"PRIx64":\t%s\t\t%s grp:%d,%d,%d,%d\n", insn[i].address, insn[i].mnemonic, insn[i].op_str);
 		DBG_PRINT("Process instruction at 0x%08lx\n", insn[i].address);
 		is_jmp_targets=not_in(insn[i].address, jump_targets, jt_cnt);
 		if (cs_insn_group(handle, &insn[i], CS_GRP_INT)) {
