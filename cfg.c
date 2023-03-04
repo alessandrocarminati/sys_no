@@ -90,29 +90,32 @@ struct Block *build_cfg(struct exec_item *f) {
 		DBG_PRINT("Process instruction at 0x%08lx\n", insn[i].address);
 		is_jmp_targets=not_in(insn[i].address, jump_targets, jt_cnt);
 		if (cs_insn_group(handle, &insn[i], CS_GRP_INT)) {
-			DBG_PRINT("Block starting at 0x%08lx has syscall\n", current->start);
+			DBG_PRINT("Block starting at 0x%08x has syscall\n", current->start);
 			current->syscall=1;
 			}
 		if (cs_insn_group(handle, &insn[i], CS_GRP_RET)) {
-			DBG_PRINT("Block starting at 0x%08lx has ret\n", current->start);
+			DBG_PRINT("Block starting at 0x%08x has ret\n", current->start);
 			current->ret=1;
 			}
 		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP) || cs_insn_group(handle, &insn[i], CS_GRP_CALL) || !is_jmp_targets) {
+			DBG_PRINT("Process instruction at 0x%08lx determine if forward or branch needs to be filled\n", insn[i].address);
 			current->end=insn[i].address;
 			cs_x86_op *op = &(insn[i].detail->x86.operands[0]);
 
 			if (is_jmp_targets) {
+				DBG_PRINT("Block ending at 0x%08lx is because a branch statement op->type=%d\n", insn[i].address, op->type);
 				if (op->type == X86_OP_IMM) {
 					// Direct jump or call
-					DBG_PRINT("Hit Block termination set branch_addr=0x%08lx\n", op->imm);
+					DBG_PRINT("Hit Block termination @0x%08x set branch_addr=0x%08lx\n", insn[i].address, op->imm);
 					if (insn[i].id != X86_INS_CALL) current->branch_addr=op->imm;
 					}
 				if (op->type == X86_OP_MEM) {
 					// Indirect jump or call
-					DBG_PRINT("Hit Block termination set branch_addr=0x%08lx\n", 1);
+					DBG_PRINT("Hit Block termination @0x%08x set branch_addr=0x%08lx\n", insn[i].address, 1UL);
 					if (insn[i].id != X86_INS_CALL) current->branch_addr=1;
 					}
 				}
+
 			if (i+1 < count) {
 				if (insn[i].id != X86_INS_JMP) {
 					DBG_PRINT("Hit Block termination set forward_addr=0x%08lx\n", insn[i+1].address);
