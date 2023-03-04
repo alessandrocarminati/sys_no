@@ -119,8 +119,8 @@ struct Block *build_cfg(struct exec_item *f) {
 
 			if (i+1 < count) {
 				if (insn[i].id != X86_INS_JMP) {
-					DBG_PRINT("Hit Block termination set forward_addr=0x%08lx\n", insn[i+1].address);
-					current->forward_addr=insn[i+1].address;
+					DBG_PRINT("Hit Block termination @0x%08x set forward_addr=0x%08lx\n", insn[i].address, insn[i+1].address);
+					if (!current->ret) current->forward_addr=insn[i+1].address;
 					}
 				if ((app=(struct Block *) malloc(sizeof(struct Block)))==NULL){
 					printf("Error Allocating memory\n");
