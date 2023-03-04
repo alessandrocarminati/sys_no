@@ -121,10 +121,9 @@ struct Block *build_cfg(struct exec_item *f) {
 				if ((app=(struct Block *) malloc(sizeof(struct Block)))==NULL){
 					printf("Error Allocating memory\n");
 					// TODO: check list and remove allocated stuff
-					return 0;
+					return NULL;
 					};
 				memset(app, 0, sizeof(struct Block));
-//				app->start=insn[i].address;
 				app->start=insn[i+1].address;
 				app->syscall=false;
 				app->branch_addr=0;
