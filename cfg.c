@@ -182,11 +182,17 @@ static bool not_in(uint64_t c, uint64_t visited[], int visited_no){
 }
 
 static int _print_dot(struct Block *current, char *dot, int *dot_len, uint64_t visited[], int *visited_no){
+	unsigned char *color=NULL;
 
 	visited[(*visited_no)++]=current->start;
 
-	if (current->syscall) if (DOT_BUF_SIZE-*dot_len>0) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE-*dot_len, " \"0x%08x\" [shape=box style=filled fillcolor=green]\n", current->start);
-	if (current->ret)  if (DOT_BUF_SIZE-*dot_len>0) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE-*dot_len, " \"0x%08x\" [shape=box style=filled fillcolor=red]\n", current->start);
+	if ((current->syscall) && (current->ret) ) color="yellow";
+		else {
+			if (current->syscall) color="green";
+			if (current->ret)  color="red";
+			}
+
+	if (color && (DOT_BUF_SIZE-*dot_len>0)) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE-*dot_len, " \"0x%08x\" [shape=box style=filled fillcolor=%s]\n", current->start, color);
 
 	if (current->forward) {
 		if (DOT_BUF_SIZE-*dot_len>0) (*dot_len) += snprintf(dot+(*dot_len), DOT_BUF_SIZE-*dot_len, " \"0x%08x\" -> \"0x%08x\"\n", current->start, current->forward->start);
