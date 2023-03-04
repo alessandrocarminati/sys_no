@@ -59,7 +59,7 @@ struct Block *build_cfg(struct exec_item *f) {
 
 	// collect jump targets
 	for (i = 0; i < count; i++) {
-		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP) || cs_insn_group(handle, &insn[i], CS_GRP_CALL)) {
+		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) {
 			cs_x86_op *op = &(insn[i].detail->x86.operands[0]);
 			if (op->type == X86_OP_IMM) {
 				DBG_PRINT("@%d instr adding jump_targets[%zu]=0x%08lx jmp dst\n", i, jt_cnt, op->imm);
