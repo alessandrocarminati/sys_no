@@ -31,7 +31,7 @@ struct Block *build_cfg(struct exec_item *f) {
 	size_t count, jt_cnt=0;
 	struct Block *first=NULL, *current, *app;
 	int i;
-	bool found, is_jmp_targets;
+	bool found, not_jmp_targets;
 	uint64_t jump_targets[MAX_JT];
 
 	DBG_PRINT("Initialize Capstone\n");
@@ -89,7 +89,7 @@ struct Block *build_cfg(struct exec_item *f) {
 	for (i = 0; i < count; i++) {
 		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) DBG_PRINT("0x%"PRIx64":\t%s\t\t%s grp:%d,%d,%d,%d\n", insn[i].address, insn[i].mnemonic, insn[i].op_str);
 		DBG_PRINT("Process instruction at 0x%08lx\n", insn[i].address);
-		is_jmp_targets=not_in(insn[i].address, jump_targets, jt_cnt);
+		not_jmp_targets=not_in(insn[i].address, jump_targets, jt_cnt);
 		if (cs_insn_group(handle, &insn[i], CS_GRP_INT)) {
 			DBG_PRINT("Block starting at 0x%08x has syscall\n", current->start);
 			current->syscall=1;
@@ -98,12 +98,12 @@ struct Block *build_cfg(struct exec_item *f) {
 			DBG_PRINT("Block starting at 0x%08x has ret\n", current->start);
 			current->ret=1;
 			}
-		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP) || cs_insn_group(handle, &insn[i], CS_GRP_CALL) || !is_jmp_targets) {
+		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP) || !not_jmp_targets) {
 			DBG_PRINT("Process instruction at 0x%08lx determine if forward or branch needs to be filled\n", insn[i].address);
 			current->end=insn[i].address;
 			cs_x86_op *op = &(insn[i].detail->x86.operands[0]);
 
-			if (is_jmp_targets) {
+			if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) {
 				DBG_PRINT("Block ending at 0x%08lx is because a branch statement op->type=%d\n", insn[i].address, op->type);
 				if (op->type == X86_OP_IMM) {
 					// Direct jump or call
