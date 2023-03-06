@@ -87,7 +87,7 @@ struct Block *build_cfg(struct exec_item *f) {
 
 	// iterate all instructions
 	for (i = 0; i < count; i++) {
-		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) DBG_PRINT("0x%"PRIx64":\t%s\t\t%s grp:%d,%d,%d,%d\n", insn[i].address, insn[i].mnemonic, insn[i].op_str);
+		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) DBG_PRINT("0x%"PRIx64":\t%s\t\t%s\n", insn[i].address, insn[i].mnemonic, insn[i].op_str);
 		DBG_PRINT("Process instruction at 0x%08lx\n", insn[i].address);
 		not_jmp_targets=not_in(insn[i].address, jump_targets, jt_cnt);
 		if (cs_insn_group(handle, &insn[i], CS_GRP_INT)) {
@@ -107,19 +107,19 @@ struct Block *build_cfg(struct exec_item *f) {
 				DBG_PRINT("Block ending at 0x%08lx is because a branch statement op->type=%d\n", insn[i].address, op->type);
 				if (op->type == X86_OP_IMM) {
 					// Direct jump or call
-					DBG_PRINT("Hit Block termination @0x%08x set branch_addr=0x%08lx\n", insn[i].address, op->imm);
+					DBG_PRINT("Hit Block termination @0x%08lx set branch_addr=0x%08lx\n", insn[i].address, op->imm);
 					if (insn[i].id != X86_INS_CALL) current->branch_addr=op->imm;
 					}
 				if (op->type == X86_OP_MEM) {
 					// Indirect jump or call
-					DBG_PRINT("Hit Block termination @0x%08x set branch_addr=0x%08lx\n", insn[i].address, 1UL);
+					DBG_PRINT("Hit Block termination @0x%08lx set branch_addr=0x%08lx\n", insn[i].address, 1UL);
 					if (insn[i].id != X86_INS_CALL) current->branch_addr=1;
 					}
 				}
 
 			if (i+1 < count) {
 				if (insn[i].id != X86_INS_JMP) {
-					DBG_PRINT("Hit Block termination @0x%08x set forward_addr=0x%08lx\n", insn[i].address, insn[i+1].address);
+					DBG_PRINT("Hit Block termination @0x%08lx set forward_addr=0x%08lx\n", insn[i].address, insn[i+1].address);
 					if (!current->ret) current->forward_addr=insn[i+1].address;
 					}
 				if ((app=(struct Block *) malloc(sizeof(struct Block)))==NULL){
@@ -175,7 +175,7 @@ void print_plain_cfg(struct Block *root){
 	DL_FOREACH(root,app)  printf("Block: Start=0x%08x, End=0x%08x, Syscall=%d, ret=%d, Next-Forward=0x%08x, Next-branch=0x%08x\n", app->start, app->end, app->syscall, app->ret, app->forward_addr, app->branch_addr);
 }
 
-static bool not_in(uint64_t c, uint64_t visited[], int visited_no){
+bool not_in(uint64_t c, uint64_t visited[], int visited_no){
 	int i;
 
 	for (i=0; i<visited_no; i++) {
@@ -185,7 +185,7 @@ static bool not_in(uint64_t c, uint64_t visited[], int visited_no){
 }
 
 static int _print_dot(struct Block *current, char *dot, int *dot_len, uint64_t visited[], int *visited_no){
-	unsigned char *color=NULL;
+	char *color=NULL;
 
 	visited[(*visited_no)++]=current->start;
 
@@ -219,7 +219,7 @@ char *cfg2dot(struct Block *root){
 	struct block_list visited = {.blocks_no=0};
 	int err, dot_len=0;
 
-	visited.blocks=(uint64_t *) malloc(MAX_BLOCS*sizeof(uint64_t));
+	visited.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
 	dot= (char *) malloc(DOT_BUF_SIZE);
 	dot_len += snprintf(dot+dot_len, DOT_BUF_SIZE-dot_len, "digraph G {\n");
 	err=_print_dot(root, dot, &dot_len, visited.blocks, &(visited.blocks_no));
