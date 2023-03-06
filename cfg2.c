@@ -15,7 +15,7 @@ int main(){
 	root=build_cfg(&f1);
 	print_plain_cfg(root);
 	printf("%s", cfg2dot(root));
-	while (search_next(root, &v, &p, 0, &tmp)!=NO_FOUND) {
+	while (search_next(root, VIRTUAL_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
 		printf("Path found!\n");
 		for (i=0; i<p.blocks_no; i++) {
 			printf("0x%08lx, ", *(p.blocks+i));

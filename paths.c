@@ -13,10 +13,10 @@ static bool not_in2(uint64_t c, uint64_t visited[], int visited_no){
 */
 
 
-int search_next(struct Block *current, struct block_list *visited, struct block_list *path, int path_len, int *itn_no) {
+int search_next(struct Block *current, int res_type, struct block_list *visited, struct block_list *path, int path_len, int *itn_no) {
 
 	visited->blocks[(visited->blocks_no)++]=current->start;
-	path->blocks[(path_len)++]=current->start;
+	path->blocks[(path_len)++]=res_type==VIRTUAL_ADDRESS?current->start:current;
 //	*(itn_no)++;
 
 	if ((*(itn_no)<visited->blocks_no)&&(current->syscall)) {
@@ -26,11 +26,11 @@ int search_next(struct Block *current, struct block_list *visited, struct block_
 		return NEW_FOUND;
 		}
 
-	if ((current->forward) && not_in(current->forward->start, visited->blocks, visited->blocks_no) && (search_next(current->forward, visited, path, path_len, itn_no)==NEW_FOUND)) {
+	if ((current->forward) && not_in(current->forward->start, visited->blocks, visited->blocks_no) && (search_next(current->forward, res_type, visited, path, path_len, itn_no)==NEW_FOUND)) {
 		return NEW_FOUND;
 		}
 
-	if ((current->branch) && not_in(current->branch->start, visited->blocks, visited->blocks_no) && (search_next(current->branch, visited, path, path_len, itn_no)==NEW_FOUND)) {
+	if ((current->branch) && not_in(current->branch->start, visited->blocks, visited->blocks_no) && (search_next(current->branch, res_type, visited, path, path_len, itn_no)==NEW_FOUND)) {
 		return NEW_FOUND;
 		}
 
