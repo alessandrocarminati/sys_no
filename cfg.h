@@ -36,6 +36,7 @@ struct exec_item {
 struct Block {
 	int 		start;
 	int 		end;
+	int		instr_cnt;
 	unsigned int 	syscall : 1;
 	unsigned int 	ret : 1;
 	struct 		Block *branch, *forward, *next, *prev;

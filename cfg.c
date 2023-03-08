@@ -82,11 +82,13 @@ struct Block *build_cfg(struct exec_item *f) {
 	current->start=insn[0].address;
 	current->syscall=0;
 	current->ret=0;
+	current->instr_cnt=0;
 	current->branch_addr=0;
 	current->forward_addr=0;
 
 	// iterate all instructions
 	for (i = 0; i < count; i++) {
+		current->instr_cnt++;
 		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) DBG_PRINT("0x%"PRIx64":\t%s\t\t%s\n", insn[i].address, insn[i].mnemonic, insn[i].op_str);
 		DBG_PRINT("Process instruction at 0x%08lx\n", insn[i].address);
 		not_jmp_targets=not_in(insn[i].address, jump_targets, jt_cnt);
@@ -132,6 +134,7 @@ struct Block *build_cfg(struct exec_item *f) {
 				app->syscall=false;
 				app->branch_addr=0;
 				app->forward_addr=0;
+				app->instr_cnt=0;
 				DL_APPEND(first, app);
 				current=app;
 				}
@@ -172,7 +175,7 @@ struct Block *build_cfg(struct exec_item *f) {
 void print_plain_cfg(struct Block *root){
 	struct Block *app;
 
-	DL_FOREACH(root,app)  printf("Block: Start=0x%08x, End=0x%08x, Syscall=%d, ret=%d, Next-Forward=0x%08x, Next-branch=0x%08x\n", app->start, app->end, app->syscall, app->ret, app->forward_addr, app->branch_addr);
+	DL_FOREACH(root,app)  printf("Block: Start=0x%08x, End=0x%08x, instr_cnt=%d Syscall=%d, ret=%d, Next-Forward=0x%08x, Next-branch=0x%08x\n", app->start, app->end, app->instr_cnt, app->syscall, app->ret, app->forward_addr, app->branch_addr);
 }
 
 bool not_in(uint64_t c, uint64_t visited[], int visited_no){
