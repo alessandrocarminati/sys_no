@@ -100,7 +100,7 @@ struct Block *build_cfg(struct exec_item *f) {
 			}
 		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP) || !not_jmp_targets) {
 			DBG_PRINT("Process instruction at 0x%08lx determine if forward or branch needs to be filled\n", insn[i].address);
-			current->end=insn[i].address;
+			current->end=i<count-1?insn[i+1].address:f->base_address+f->length;
 			cs_x86_op *op = &(insn[i].detail->x86.operands[0]);
 
 			if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) {
@@ -143,7 +143,7 @@ struct Block *build_cfg(struct exec_item *f) {
 	DL_FOREACH(first,current) {
 		found=false;
 		DL_FOREACH(first,app){
-			if ((current->branch_addr >= app->start) && (current->branch_addr <= app->end)) {
+			if ((current->branch_addr >= app->start) && (current->branch_addr < app->end)) {
 				found=true;
 				break;
 				}
@@ -154,7 +154,7 @@ struct Block *build_cfg(struct exec_item *f) {
 
 		found=false;
 		DL_FOREACH(first,app){
-			if ((current->forward_addr >= app->start) && (current->forward_addr <= app->end)) {
+			if ((current->forward_addr >= app->start) && (current->forward_addr < app->end)) {
 				found=true;
 				break;
 				}
