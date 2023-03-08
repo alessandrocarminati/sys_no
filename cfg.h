@@ -45,7 +45,7 @@ struct Block {
 struct block_list {
 	union {
 		uint64_t *blocks;
-		struct Block *blocks_addr;
+		struct Block **blocks_addr;
 		};
 
 	int     blocks_no;

@@ -5,7 +5,8 @@
 int search_next(struct Block *current, int res_type, struct block_list *visited, struct block_list *path, int path_len, int *itn_no) {
 
 	visited->blocks[(visited->blocks_no)++]=current->start;
-	path->blocks[(path_len)++]=res_type==VIRTUAL_ADDRESS?current->start:current;
+	if (res_type==VIRTUAL_ADDRESS) path->blocks     [(path_len)++]=current->start;
+	if (res_type==HOST_ADDRESS)    path->blocks_addr[(path_len)++]=current;
 
 	if ((*(itn_no)<visited->blocks_no)&&(current->syscall)) {
 		path->blocks_no=path_len;
