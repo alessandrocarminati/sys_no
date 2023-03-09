@@ -146,5 +146,4 @@ int emu_init(char *code, uint64_t base_address, int size, uc_engine **ret) {
 
 void emu_stop(uc_engine *uc){
 	uc_close(uc);
-	free(uc);
 }
