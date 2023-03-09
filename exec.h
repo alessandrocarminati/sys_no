@@ -23,7 +23,7 @@ static bool hook_instruction(uc_engine *uc, uc_mem_type type, uint64_t address, 
 static void hook_mem_fetch_check(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data);
 void dump_registers(uc_engine *uc);
 int execute_block(uc_engine *uc, struct Block *b);
-int emu_init(char * code, uint64_t base_address, int size, uc_engine **uc);
+int emu_init(unsigned char * code, uint64_t base_address, int size, uc_engine **uc);
 void emu_stop(uc_engine *uc);
 
 #endif

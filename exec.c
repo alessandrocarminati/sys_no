@@ -114,7 +114,7 @@ int execute_block(uc_engine *uc, struct Block *b) {
 	return b->syscall?SYSCALL:SUCCESS;
 }
 
-int emu_init(char *code, uint64_t base_address, int size, uc_engine **ret) {
+int emu_init(unsigned char *code, uint64_t base_address, int size, uc_engine **ret) {
 	int err;
 	uint64_t reg;
 	uc_engine *uc;
@@ -127,14 +127,14 @@ int emu_init(char *code, uint64_t base_address, int size, uc_engine **ret) {
 		}
 	DBG_PRINT("Allocating memory for text application\n");
 	// allocate 4kb aligned memory
-	if (err=uc_mem_map(uc, base_address & 0xffffffffffff0000, 1024*1024*2, UC_PROT_ALL)){
+	if ((err=uc_mem_map(uc, base_address & 0xffffffffffff0000, 1024*1024*2, UC_PROT_ALL))){
 		DBG_PRINT("Failed to allocate emulation memory, quit! (%u)\n", err);
 		return ERR_CANT_ALLOCATE_TEXT;
 		}
 	reg=STACK_TOP;
 	uc_reg_write(uc, UC_X86_REG_RSP, &reg);
 	DBG_PRINT("Writing text into memory @0x%08lx\n", base_address);
-	if (err=uc_mem_write(uc, base_address, code, size)) {
+	if ((err=uc_mem_write(uc, base_address, code, size))) {
 		DBG_PRINT("Failed to write emulation code to memory, quit! (%u)\n", err);
 		uc_close(uc);
 		return ERR_CANT_WRITE_TEXT;
