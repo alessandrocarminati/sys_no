@@ -17,7 +17,7 @@ int execute_block_seq(struct exec_item *f, struct block_list *b){
 		}
 
 	for (i=0; i<b->blocks_no; i++) {
-		printf("Execute block #%d, start=0x%08lx, end=0x%08lx\n",i, b->blocks_addr[i]->start, b->blocks_addr[i]->end);
+		printf("Execute block #%d, start=0x%08x, end=0x%08x\n",i, b->blocks_addr[i]->start, b->blocks_addr[i]->end);
 		err=execute_block(uc, b->blocks_addr[i]);
 		printf("%d\n",err);
 		if ((err!=SUCCESS)&&(err!=SYSCALL)) {
@@ -46,7 +46,7 @@ int main(){
 	while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
 		printf("Path found!\n");
 		for (i=0; i<p.blocks_no; i++) {
-			printf("0x%08lx, ", p.blocks_addr[i]->start);
+			printf("0x%08x, ", p.blocks_addr[i]->start);
 			}
 		printf("\n");
 		execute_block_seq(&f2, &p);

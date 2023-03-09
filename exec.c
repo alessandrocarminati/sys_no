@@ -134,7 +134,7 @@ int emu_init(char *code, uint64_t base_address, int size, uc_engine **ret) {
 	reg=STACK_TOP;
 	uc_reg_write(uc, UC_X86_REG_RSP, &reg);
 										uc_mem_write(uc, STACK_TOP+8, 0xffffffffffff0000, 8);
-	DBG_PRINT("Writing text into memory @0x%08x\n", base_address);
+	DBG_PRINT("Writing text into memory @0x%08lx\n", base_address);
 	if (err=uc_mem_write(uc, base_address, code, size)) {
 		DBG_PRINT("Failed to write emulation code to memory, quit! (%u)\n", err);
 		uc_close(uc);
