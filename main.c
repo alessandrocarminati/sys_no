@@ -38,7 +38,7 @@ int main(){
 	uc_engine *uc=NULL;
 
 	v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
-	p.blocks_addr=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
+	p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
 
 	root=build_cfg(&f2);
 	print_plain_cfg(root);
