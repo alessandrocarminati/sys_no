@@ -9,9 +9,6 @@
 #include <stdbool.h>
 #include <capstone/capstone.h>
 
-
-#define DEBUG
-
 #define MAX_JT		128
 #define MAX_BLOCKS	1024
 #define DOT_BUF_SIZE	8192

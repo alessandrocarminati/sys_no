@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <unicorn/unicorn.h>
 
+#define DEBUG
+
 #include "sample_code.h"
 #include "cfg.h"
 #include "paths.h"
