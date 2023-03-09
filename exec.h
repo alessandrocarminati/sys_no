@@ -5,7 +5,7 @@
 #include <unicorn/unicorn.h>
 #include "cfg.h"
 
-#define STACK_TOP    0x55aa55aa0000fff8
+#define STACK_TOP    0x55aa55aa00008000
 #define MEM_SIZE_4KB 0x1000ULL
 #define MEM_SIZE_2MB 0x200000ULL
 
