@@ -131,8 +131,15 @@ int emu_init(unsigned char *code, uint64_t base_address, int size, uc_engine **r
 		DBG_PRINT("Failed to allocate emulation memory, quit! (%u)\n", err);
 		return ERR_CANT_ALLOCATE_TEXT;
 		}
+
+	DBG_PRINT("Allocating stack memory\n");
 	reg=STACK_TOP;
 	uc_reg_write(uc, UC_X86_REG_RSP, &reg);
+	if ((err=uc_mem_map(uc, STACK_TOP & 0xffffffffffff0000, 1024*64, UC_PROT_ALL))){
+		DBG_PRINT("Failed to allocate stack memory, quit! (%u)\n", err);
+		return ERR_CANT_ALLOCATE_TEXT;
+		}
+
 	DBG_PRINT("Writing text into memory @0x%08lx\n", base_address);
 	if ((err=uc_mem_write(uc, base_address, code, size))) {
 		DBG_PRINT("Failed to write emulation code to memory, quit! (%u)\n", err);
