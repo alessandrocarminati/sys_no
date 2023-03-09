@@ -20,16 +20,18 @@ int execute_block_seq(struct exec_item *f, struct block_list *b){
 		}
 
 	for (i=0; i<b->blocks_no; i++) {
-		printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution #%02d start <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", i);
-		printf("Execute block #%d, start=0x%08x, end=0x%08x\n",i, b->blocks_addr[i]->start, b->blocks_addr[i]->end);
+		DBG_PRINT(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution #%02d start <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", i);
+		DBG_PRINT("Execute block #%d, start=0x%08x, end=0x%08x\n",i, b->blocks_addr[i]->start, b->blocks_addr[i]->end);
 		err=execute_block(uc, b->blocks_addr[i]);
-		printf("Execution error flag=%d\n",err);
+		DBG_PRINT("Execution error flag=%d\n",err);
 		if ((err!=SUCCESS)&&(err!=SYSCALL)) {
 			printf("exit!\n");
 			return 1;
 			}
+#ifdef DEBUG
 		dump_registers(uc);
-		printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution #%02d end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", i);
+#endif
+		DBG_PRINT(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution #%02d end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", i);
 		}
 	emu_stop(uc);
 	return 0;
@@ -49,7 +51,7 @@ int main(){
 	print_plain_cfg(root);
 	printf("%s", cfg2dot(root));
 	while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
-		printf("Path found!\n");
+		DBG_PRINT("Path found!\n");
 		for (i=0; i<p.blocks_no; i++) {
 			printf("0x%08x, ", p.blocks_addr[i]->start);
 			}

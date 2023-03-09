@@ -28,13 +28,13 @@ static bool x86_invert_jump(uint8_t *insn){
 static bool hook_mem_invalid(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
 	switch (type) {
 	default:
-		printf(">>> Missing memory is being READ at 0x%08lx data size = %u\n", address, size);
-		printf(">>> allocate 64k at 0x%08lx\n", address & 0xffffffffffff0000);
+		DBG_PRINT(">>> Missing memory is being READ at 0x%08lx data size = %u\n", address, size);
+		DBG_PRINT(">>> allocate 64k at 0x%08lx\n", address & 0xffffffffffff0000);
 		uc_mem_map(uc, address & 0xffffffffffff0000, 64 * 1024, UC_PROT_ALL);
 		return true;
 	case UC_MEM_WRITE_UNMAPPED:
-		printf(">>> Missing memory is being WRITE at 0x%08lx data size = %u, data value = 0x%08lx\n", address, size, value);
-		printf(">>> allocate 64k at 0x%08lx\n", address & 0xffffffffffff0000);
+		DBG_PRINT(">>> Missing memory is being WRITE at 0x%08lx data size = %u, data value = 0x%08lx\n", address, size, value);
+		DBG_PRINT(">>> allocate 64k at 0x%08lx\n", address & 0xffffffffffff0000);
 		uc_mem_map(uc, address & 0xffffffffffff0000, 64 * 1024, UC_PROT_ALL);
 		return true;
 	}
