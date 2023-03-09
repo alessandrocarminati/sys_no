@@ -6,6 +6,7 @@
 #include "paths.h"
 #include "exec.h"
 
+#define PAYLOAD f1
 int execute_block_seq(struct exec_item *f, struct block_list *b){
 	uc_engine *uc;
 	int i, err;
@@ -40,7 +41,7 @@ int main(){
 	v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
 	p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
 
-	root=build_cfg(&f2);
+	root=build_cfg(&PAYLOAD);
 	print_plain_cfg(root);
 	printf("%s", cfg2dot(root));
 	while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
@@ -49,7 +50,7 @@ int main(){
 			printf("0x%08x, ", p.blocks_addr[i]->start);
 			}
 		printf("\n");
-		execute_block_seq(&f2, &p);
+		execute_block_seq(&PAYLOAD, &p);
 		}
 
 }
