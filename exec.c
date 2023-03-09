@@ -103,8 +103,9 @@ int execute_block(uc_engine *uc, struct Block *b) {
 
 	DBG_PRINT("Settig up hooks on memory unmapped events\n");
 	uc_hook_add(uc, &trace1, UC_HOOK_MEM_READ_UNMAPPED | UC_HOOK_MEM_WRITE_UNMAPPED, hook_mem_invalid, NULL, 1, 0);
+
 	DBG_PRINT("Executing block @(0x%08x ~ 0x%08x) [%d instructions]\n", b->start, b->end, b->instr_cnt);
-	err = uc_emu_start(uc, b->start, 0, b->instr_cnt, 0);
+	err = uc_emu_start(uc, b->start, 0, 0, b->instr_cnt);
 	if (err) {
 		uc_reg_read(uc, UC_X86_REG_RIP, &reg);
 		DBG_PRINT("Failed on uc_emu_start() at 0x%08lx with error returned %u: %s\n", reg, err, uc_strerror(err));
