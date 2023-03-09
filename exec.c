@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "exec.h"
 
-static bool x86_invert_jump(uint8_t *insn){
+static bool x86_invert_jump(uint8_t *insn) {
 	uint16_t x86_j_near[]=
 	{0x800F, 0x810F, 0x880F, 0x890F, 0x840F, 0x850F, 0x820F, 0x830F, 0x860F, 0x870F, 0x8C0F, 0x8D0F, 0x8E0F, 0x8F0F, 0x8A0F, 0x8B0F};
 	uint8_t x86_j_short[]=
