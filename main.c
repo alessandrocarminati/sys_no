@@ -50,7 +50,10 @@ int main(){
 			printf("0x%08x, ", p.blocks_addr[i]->start);
 			}
 		printf("\n");
-		execute_block_seq(&PAYLOAD, &p);
+		if (execute_block_seq(&PAYLOAD, &p)) {
+			printf("Premature termination!!!\n");
+			break;
+			}
 		}
 
 }
