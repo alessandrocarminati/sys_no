@@ -18,14 +18,16 @@ int execute_block_seq(struct exec_item *f, struct block_list *b){
 		}
 
 	for (i=0; i<b->blocks_no; i++) {
+		printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution #%02d start <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", i);
 		printf("Execute block #%d, start=0x%08x, end=0x%08x\n",i, b->blocks_addr[i]->start, b->blocks_addr[i]->end);
 		err=execute_block(uc, b->blocks_addr[i]);
-		printf("%d\n",err);
+		printf("Execution error flag=%d\n",err);
 		if ((err!=SUCCESS)&&(err!=SYSCALL)) {
 			printf("exit!\n");
 			return 1;
 			}
 		dump_registers(uc);
+		printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution #%02d end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", i);
 		}
 	emu_stop(uc);
 	return 0;
