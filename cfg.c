@@ -20,7 +20,7 @@ static uint64_t next_instr(uint64_t curr, cs_insn *insn, int instr_no){
 	int i;
 
 	for (i = 0; i < instr_no; i++) {
-		if ((curr==insn[i].address) && (i<instr_no)) return insn[i+1].address;
+		if ((curr==insn[i].address) && (i<instr_no-1)) return insn[i+1].address;
 		}
 	return 0;
 }
