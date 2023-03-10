@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdint.h>
 #include "exec.h"
+#include "helper.h"
 #include "global_defines.h"
 
 static bool x86_invert_jump(uint8_t *insn) {
@@ -62,6 +63,7 @@ static void hook_syscall(uc_engine *uc, void *user_data) {
 	uc_reg_read(uc, UC_X86_REG_RAX, &rax);
 	uc_reg_read(uc, UC_X86_REG_RIP, &rip);
 	printf("############### Syscall [0x%08lx] @0x%08lx ###############\n", rax, rip);
+	print_trace();
 }
 
 void dump_registers(uc_engine *uc){
