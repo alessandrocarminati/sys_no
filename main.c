@@ -46,6 +46,7 @@ int main(){
 	v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
 	p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
 
+	init_res();
 	root=build_cfg(&PAYLOAD);
 	print_plain_cfg(root);
 	printf("%s", cfg2dot(root));
@@ -60,5 +61,5 @@ int main(){
 			break;
 			}
 		}
-
+	print_res("{address: \"0x%08lx\", number:\"%d\"}\n");
 }

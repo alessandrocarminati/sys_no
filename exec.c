@@ -5,6 +5,8 @@
 #include "helper.h"
 #include "global_defines.h"
 
+struct sys_results sys_res;
+
 static bool x86_invert_jump(uint8_t *insn) {
 	uint16_t x86_j_near[]=
 	{0x800F, 0x810F, 0x880F, 0x890F, 0x840F, 0x850F, 0x820F, 0x830F, 0x860F, 0x870F, 0x8C0F, 0x8D0F, 0x8E0F, 0x8F0F, 0x8A0F, 0x8B0F};
@@ -62,7 +64,8 @@ static void hook_syscall(uc_engine *uc, void *user_data) {
 
 	uc_reg_read(uc, UC_X86_REG_RAX, &rax);
 	uc_reg_read(uc, UC_X86_REG_RIP, &rip);
-	printf("############### Syscall [0x%08lx] @0x%08lx ###############\n", rax, rip);
+	ins_res(rip,rax);
+	DBG_PRINT("############### Syscall [0x%08lx] @0x%08lx ###############\n", rax, rip);
 	print_trace();
 }
 
@@ -168,4 +171,33 @@ int emu_init(unsigned char *code, uint64_t base_address, int size, uc_engine **r
 
 void emu_stop(uc_engine *uc){
 	uc_close(uc);
+}
+
+void init_res(void){
+        memset(&sys_res, 0, sizeof(struct sys_results));
+}
+
+void ins_res(uint64_t addr, uint32_t num){
+	int i=0;
+	bool present=false;
+
+	while (i<sys_res.num) {
+		if (sys_res.addr[i]==addr) {
+			present=true;
+			}
+		i++;
+		}
+	if (!present) {
+		sys_res.addr[i]=addr;
+		sys_res.sys_no[i]=num;
+		sys_res.num++;
+		}
+}
+void print_res(const char *fmt){
+	int i=0;
+
+	for (i=0; i<sys_res.num; i++) {
+		printf(fmt, sys_res.addr[i], sys_res.sys_no[i]);
+		}
+
 }

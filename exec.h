@@ -17,6 +17,15 @@
 #define ERR_CANT_OPEN_UNICORN 5
 #define ERR_CANT_ALLOCATE_TEXT 6
 #define ERR_CANT_ALLOCATE_STACK 7
+
+#define SYS_MAX_RES 20
+
+struct sys_results {
+	uint64_t addr[SYS_MAX_RES];
+	uint32_t sys_no[SYS_MAX_RES];
+	int	num;
+	};
+
 static bool x86_invert_jump(uint8_t *insn);
 static bool hook_mem_invalid(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data);
 static bool hook_instruction(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data);
@@ -25,6 +34,9 @@ void dump_registers(uc_engine *uc);
 int execute_block(uc_engine *uc, struct Block *b);
 int emu_init(unsigned char * code, uint64_t base_address, int size, uc_engine **uc);
 void emu_stop(uc_engine *uc);
+void init_res(void);
+void ins_res(uint64_t addr, uint32_t num);
+void print_res(const char *fmt);
 
 #endif
 
