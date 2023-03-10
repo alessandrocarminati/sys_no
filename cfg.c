@@ -154,7 +154,7 @@ struct Block *build_cfg(struct exec_item *f) {
 			}
 		current->branch = found?app:NULL;
 
-		if (app) DBG_PRINT("link 0x%08x and 0x%08x\n", current->start, app->start); else printf("branch 0x%08x not found\n", current->branch_addr);
+		if (app) DBG_PRINT("link 0x%08x and 0x%08x\n", current->start, app->start); else DBG_PRINT("branch 0x%08x not found\n", current->branch_addr);
 
 		found=false;
 		DL_FOREACH(first,app){
@@ -165,7 +165,7 @@ struct Block *build_cfg(struct exec_item *f) {
 			}
 		current->forward=found?app:NULL;
 
-		if (app) DBG_PRINT("link 0x%08x and 0x%08x\n", current->start, app->start); else printf("forward 0x%08x not found\n", current->forward_addr);
+		if (app) DBG_PRINT("link 0x%08x and 0x%08x\n", current->start, app->start); else DBG_PRINT("forward 0x%08x not found\n", current->forward_addr);
 
 		}
 
