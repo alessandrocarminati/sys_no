@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <unicorn/unicorn.h>
 
-#define DEBUG
-
 #include "sample_code.h"
 #include "cfg.h"
 #include "paths.h"
 #include "exec.h"
+#include "global_defines.h"
 
 #define PAYLOAD f1
 int execute_block_seq(struct exec_item *f, struct block_list *b){

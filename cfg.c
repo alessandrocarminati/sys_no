@@ -6,6 +6,7 @@
 #include "uthash/src/utlist.h"
 #include "consts.h"
 #include "cfg.h"
+#include "global_defines.h"
 
 static uint64_t prev_instr(uint64_t curr, cs_insn *insn, int instr_no){
 	int i;

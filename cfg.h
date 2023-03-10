@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <capstone/capstone.h>
+#include "global_defines.h"
 
 #define MAX_JT		128
 #define MAX_BLOCKS	1024

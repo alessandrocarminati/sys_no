@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdint.h>
 #include "exec.h"
+#include "global_defines.h"
 
 static bool x86_invert_jump(uint8_t *insn) {
 	uint16_t x86_j_near[]=
