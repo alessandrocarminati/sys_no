@@ -24,6 +24,8 @@ block that contains a `ret` instruction.
 The next step involves finding a path from the entry point of the function
 to the `syscall` instruction block.
 
+![image info](./imgs/__pthread_mutex_lock_full_path.gif)
+
 Once the path is identified, an additional operation is performed where the
 code is scanned to identify any `call` instructions along the path. 
 Any `call` instructions needs to be replaced with `nop` instructions to 
