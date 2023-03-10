@@ -1,0 +1,70 @@
+.text:00000000000482B0
+.text:00000000000482B0                                     ; =============== S U B R O U T I N E =======================================
+.text:00000000000482B0
+.text:00000000000482B0
+.text:00000000000482B0                                                     public getentropy
+.text:00000000000482B0                                     getentropy      proc near               ; DATA XREF: LOAD:0000000000007D18↑o
+.text:00000000000482B0                                     ; __unwind {
+.text:00000000000482B0 F3 0F 1E FA                                         endbr64
+.text:00000000000482B4 48 81 FE 00 01 00 00                                cmp     rsi, 100h
+.text:00000000000482BB 77 73                                               ja      short loc_48330
+.text:00000000000482BD 4C 8D 04 37                                         lea     r8, [rdi+rsi]
+.text:00000000000482C1 41 B9 3E 01 00 00                                   mov     r9d, 13Eh
+.text:00000000000482C7 66 0F 1F 84 00 00 00 00 00                          nop     word ptr [rax+rax+00000000h]
+.text:00000000000482D0
+.text:00000000000482D0                                     loc_482D0:                              ; CODE XREF: getentropy+5D↓j
+.text:00000000000482D0 4C 39 C7                                            cmp     rdi, r8
+.text:00000000000482D3 73 24                                               jnb     short loc_482F9
+.text:00000000000482D5
+.text:00000000000482D5                                     loc_482D5:                              ; CODE XREF: getentropy+47↓j
+.text:00000000000482D5 4C 89 C6                                            mov     rsi, r8
+.text:00000000000482D8 31 D2                                               xor     edx, edx
+.text:00000000000482DA 44 89 C8                                            mov     eax, r9d
+.text:00000000000482DD 48 29 FE                                            sub     rsi, rdi
+.text:00000000000482E0 0F 05                                               syscall                 ; LINUX -
+.text:00000000000482E2 48 3D 00 F0 FF FF                                   cmp     rax, 0FFFFFFFFFFFFF000h
+.text:00000000000482E8 77 2E                                               ja      short loc_48318
+.text:00000000000482EA 48 85 C0                                            test    rax, rax
+.text:00000000000482ED 78 11                                               js      short loc_48300
+.text:00000000000482EF 74 3F                                               jz      short loc_48330
+.text:00000000000482F1 48 01 C7                                            add     rdi, rax
+.text:00000000000482F4 4C 39 C7                                            cmp     rdi, r8
+.text:00000000000482F7 72 DC                                               jb      short loc_482D5
+.text:00000000000482F9
+.text:00000000000482F9                                     loc_482F9:                              ; CODE XREF: getentropy+23↑j
+.text:00000000000482F9 31 C0                                               xor     eax, eax
+.text:00000000000482FB C3                                                  retn
+.text:00000000000482FB                                     ; ---------------------------------------------------------------------------
+.text:00000000000482FC 0F 1F 40 00                                         align 20h
+.text:0000000000048300
+.text:0000000000048300                                     loc_48300:                              ; CODE XREF: getentropy+3D↑j
+.text:0000000000048300 48 8B 05 69 3B 1A 00                                mov     rax, cs:val3
+.text:0000000000048307 64 8B 00                                            mov     eax, fs:[rax]
+.text:000000000004830A
+.text:000000000004830A                                     loc_4830A:                              ; CODE XREF: getentropy+74↓j
+.text:000000000004830A 83 F8 04                                            cmp     eax, 4
+.text:000000000004830D 74 C1                                               jz      short loc_482D0
+.text:000000000004830F B8 FF FF FF FF                                      mov     eax, 0FFFFFFFFh
+.text:0000000000048314 C3                                                  retn
+.text:0000000000048314                                     ; ---------------------------------------------------------------------------
+.text:0000000000048315 0F 1F 00                                            align 8
+.text:0000000000048318
+.text:0000000000048318                                     loc_48318:                              ; CODE XREF: getentropy+38↑j
+.text:0000000000048318 48 8B 15 51 3B 1A 00                                mov     rdx, cs:val3
+.text:000000000004831F F7 D8                                               neg     eax
+.text:0000000000048321 64 89 02                                            mov     fs:[rdx], eax
+.text:0000000000048324 EB E4                                               jmp     short loc_4830A
+.text:0000000000048324                                     ; ---------------------------------------------------------------------------
+.text:0000000000048326 66 2E 0F 1F 84 00 00 00 00 00                       align 10h
+.text:0000000000048330
+.text:0000000000048330                                     loc_48330:                              ; CODE XREF: getentropy+B↑j
+.text:0000000000048330                                                                             ; getentropy+3F↑j
+.text:0000000000048330 48 8B 05 39 3B 1A 00                                mov     rax, cs:val3
+.text:0000000000048337 64 C7 00 05 00 00 00                                mov     dword ptr fs:[rax], 5
+.text:000000000004833E B8 FF FF FF FF                                      mov     eax, 0FFFFFFFFh
+.text:0000000000048343 C3                                                  retn
+.text:0000000000048343                                     ; } // starts at 482B0
+.text:0000000000048343                                     getentropy      endp
+.text:0000000000048343
+.text:0000000000048343                                     ; ---------------------------------------------------------------------------
+

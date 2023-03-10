@@ -1,0 +1,131 @@
+.text:000000000008CE70
+.text:000000000008CE70                                     ; =============== S U B R O U T I N E =======================================
+.text:000000000008CE70
+.text:000000000008CE70                                     ; Attributes: noreturn bp-based frame
+.text:000000000008CE70
+.text:000000000008CE70                                     sub_8CE70       proc near               ; CODE XREF: __libc_fatal+1B↓p
+.text:000000000008CE70
+.text:000000000008CE70                                     var_20A1        = byte ptr -20A1h
+.text:000000000008CE70                                     var_2098        = qword ptr -2098h
+.text:000000000008CE70                                     var_1098        = qword ptr -1098h
+.text:000000000008CE70                                     var_1081        = byte ptr -1081h
+.text:000000000008CE70                                     var_1078        = qword ptr -1078h
+.text:000000000008CE70                                     var_78          = qword ptr -78h
+.text:000000000008CE70                                     var_70          = dword ptr -70h
+.text:000000000008CE70                                     var_68          = qword ptr -68h
+.text:000000000008CE70                                     var_60          = qword ptr -60h
+.text:000000000008CE70                                     var_58          = qword ptr -58h
+.text:000000000008CE70                                     var_50          = byte ptr -50h
+.text:000000000008CE70                                     var_40          = qword ptr -40h
+.text:000000000008CE70                                     var_38          = qword ptr -38h
+.text:000000000008CE70                                     var_30          = qword ptr -30h
+.text:000000000008CE70                                     var_28          = qword ptr -28h
+.text:000000000008CE70                                     arg_0           = byte ptr  10h
+.text:000000000008CE70
+.text:000000000008CE70                                     ; __unwind {
+.text:000000000008CE70 55                                                  push    rbp
+.text:000000000008CE71 48 89 D7                                            mov     rdi, rdx
+.text:000000000008CE74 48 89 E5                                            mov     rbp, rsp
+.text:000000000008CE77 41 55                                               push    r13
+.text:000000000008CE79 41 54                                               push    r12
+.text:000000000008CE7B 49 89 D4                                            mov     r12, rdx
+.text:000000000008CE7E 53                                                  push    rbx
+.text:000000000008CE7F 48 83 EC 58                                         sub     rsp, 58h
+.text:000000000008CE83 4C 89 45 D0                                         mov     [rbp+var_30], r8
+.text:000000000008CE87 48 89 55 C0                                         mov     [rbp+var_40], rdx
+.text:000000000008CE8B 48 89 4D C8                                         mov     [rbp+var_38], rcx
+.text:000000000008CE8F 4C 89 4D D8                                         mov     [rbp+var_28], r9
+.text:000000000008CE93 64 48 8B 04 25 28 00 00 00                          mov     rax, fs:28h
+.text:000000000008CE9C 48 89 45 A8                                         mov     [rbp+var_58], rax
+.text:000000000008CEA0 31 C0                                               xor     eax, eax
+.text:000000000008CEA2 48 8D 45 10                                         lea     rax, [rbp+arg_0]
+.text:000000000008CEA6 C7 45 90 18 00 00 00                                mov     [rbp+var_70], 18h
+.text:000000000008CEAD 48 89 45 98                                         mov     [rbp+var_68], rax
+.text:000000000008CEB1 48 8D 45 B0                                         lea     rax, [rbp+var_50]
+.text:000000000008CEB5 48 89 45 A0                                         mov     [rbp+var_60], rax
+.text:000000000008CEB9 E8 A2 55 F9 FF                                      call    sub_22460
+.text:000000000008CEBE 49 89 C0                                            mov     r8, rax
+.text:000000000008CEC1 48 89 E0                                            mov     rax, rsp
+.text:000000000008CEC4 48 39 C4                                            cmp     rsp, rax
+.text:000000000008CEC7 74 1C                                               jz      short loc_8CEE5
+.text:000000000008CEC9 0F 1F 80 00 00 00 00                                nop     dword ptr [rax+00000000h]
+.text:000000000008CED0
+.text:000000000008CED0                                     loc_8CED0:                              ; CODE XREF: sub_8CE70+73↓j
+.text:000000000008CED0 48 81 EC 00 10 00 00                                sub     rsp, 1000h
+.text:000000000008CED7 48 83 8C 24 F8 0F 00 00 00                          or      [rsp+1070h+var_78], 0
+.text:000000000008CEE0 48 39 C4                                            cmp     rsp, rax
+.text:000000000008CEE3 75 EB                                               jnz     short loc_8CED0
+.text:000000000008CEE5
+.text:000000000008CEE5                                     loc_8CEE5:                              ; CODE XREF: sub_8CE70+57↑j
+.text:000000000008CEE5 48 83 EC 20                                         sub     rsp, 20h
+.text:000000000008CEE9 48 83 4C 24 18 00                                   or      [rsp+1090h+var_1078], 0
+.text:000000000008CEEF 48 8D 44 24 0F                                      lea     rax, [rsp+1090h+var_1081]
+.text:000000000008CEF4 48 83 E0 F0                                         and     rax, 0FFFFFFFFFFFFFFF0h
+.text:000000000008CEF8 4C 89 20                                            mov     [rax], r12
+.text:000000000008CEFB 4C 89 40 08                                         mov     [rax+8], r8
+.text:000000000008CEFF 48 C7 40 10 00 00 00 00                             mov     qword ptr [rax+10h], 0
+.text:000000000008CF07 48 89 E0                                            mov     rax, rsp
+.text:000000000008CF0A 48 39 C4                                            cmp     rsp, rax
+.text:000000000008CF0D 74 15                                               jz      short loc_8CF24
+.text:000000000008CF0F
+.text:000000000008CF0F                                     loc_8CF0F:                              ; CODE XREF: sub_8CE70+B2↓j
+.text:000000000008CF0F 48 81 EC 00 10 00 00                                sub     rsp, 1000h
+.text:000000000008CF16 48 83 8C 24 F8 0F 00 00 00                          or      [rsp+2090h+var_1098], 0
+.text:000000000008CF1F 48 39 C4                                            cmp     rsp, rax
+.text:000000000008CF22 75 EB                                               jnz     short loc_8CF0F
+.text:000000000008CF24
+.text:000000000008CF24                                     loc_8CF24:                              ; CODE XREF: sub_8CE70+9D↑j
+.text:000000000008CF24 48 83 EC 20                                         sub     rsp, 20h
+.text:000000000008CF28 48 83 4C 24 18 00                                   or      [rsp+20B0h+var_2098], 0
+.text:000000000008CF2E 41 B9 14 00 00 00                                   mov     r9d, 14h
+.text:000000000008CF34 48 8D 5C 24 0F                                      lea     rbx, [rsp+20B0h+var_20A1]
+.text:000000000008CF39 48 83 E3 F0                                         and     rbx, 0FFFFFFFFFFFFFFF0h
+.text:000000000008CF3D 4C 89 23                                            mov     [rbx], r12
+.text:000000000008CF40 4C 89 43 08                                         mov     [rbx+8], r8
+.text:000000000008CF44 0F 1F 40 00                                         nop     dword ptr [rax+00h]
+.text:000000000008CF48
+.text:000000000008CF48                                     loc_8CF48:                              ; CODE XREF: sub_8CE70+EE↓j
+.text:000000000008CF48 BA 01 00 00 00                                      mov     edx, 1
+.text:000000000008CF4D 48 89 DE                                            mov     rsi, rbx
+.text:000000000008CF50 BF 02 00 00 00                                      mov     edi, 2
+.text:000000000008CF55 44 89 C8                                            mov     eax, r9d
+.text:000000000008CF58 0F 05                                               syscall                 ; LINUX -
+.text:000000000008CF5A 48 83 F8 FC                                         cmp     rax, 0FFFFFFFFFFFFFFFCh
+.text:000000000008CF5E 74 E8                                               jz      short loc_8CF48
+.text:000000000008CF60 45 31 C9                                            xor     r9d, r9d
+.text:000000000008CF63 B9 22 00 00 00                                      mov     ecx, 22h ; '"'
+.text:000000000008CF68 BA 03 00 00 00                                      mov     edx, 3
+.text:000000000008CF6D 31 FF                                               xor     edi, edi        ; addr
+.text:000000000008CF6F 48 8B 05 EA EE 15 00                                mov     rax, cs:_rtld_global_ro_ptr
+.text:000000000008CF76 48 8B 40 18                                         mov     rax, [rax+18h]
+.text:000000000008CF7A 49 01 C0                                            add     r8, rax
+.text:000000000008CF7D 48 F7 D8                                            neg     rax
+.text:000000000008CF80 49 21 C0                                            and     r8, rax
+.text:000000000008CF83 4D 89 C4                                            mov     r12, r8
+.text:000000000008CF86 41 83 C8 FF                                         or      r8d, 0FFFFFFFFh
+.text:000000000008CF8A 4C 89 E6                                            mov     rsi, r12
+.text:000000000008CF8D E8 2E B9 08 00                                      call    mmap64
+.text:000000000008CF92 49 89 C5                                            mov     r13, rax
+.text:000000000008CF95 48 83 F8 FF                                         cmp     rax, 0FFFFFFFFFFFFFFFFh
+.text:000000000008CF99 74 2C                                               jz      short loc_8CFC7
+.text:000000000008CF9B 48 8B 53 08                                         mov     rdx, [rbx+8]
+.text:000000000008CF9F 48 8B 33                                            mov     rsi, [rbx]
+.text:000000000008CFA2 44 89 20                                            mov     [rax], r12d
+.text:000000000008CFA5 48 8D 78 04                                         lea     rdi, [rax+4]
+.text:000000000008CFA9 E8 F2 55 F9 FF                                      call    sub_225A0
+.text:000000000008CFAE 4C 89 EF                                            mov     rdi, r13
+.text:000000000008CFB1 C6 00 00                                            mov     byte ptr [rax], 0
+.text:000000000008CFB4 48 87 3D 85 0C 16 00                                xchg    rdi, cs:__abort_msg
+.text:000000000008CFBB 48 85 FF                                            test    rdi, rdi
+.text:000000000008CFBE 74 07                                               jz      short loc_8CFC7
+.text:000000000008CFC0 8B 37                                               mov     esi, [rdi]
+.text:000000000008CFC2 E8 A9 B9 08 00                                      call    munmap
+.text:000000000008CFC7
+.text:000000000008CFC7                                     loc_8CFC7:                              ; CODE XREF: sub_8CE70+129↑j
+.text:000000000008CFC7                                                                             ; sub_8CE70+14E↑j
+.text:000000000008CFC7 E8 62 57 F9 FF                                      call    abort
+.text:000000000008CFC7                                     ; } // starts at 8CE70
+.text:000000000008CFC7                                     sub_8CE70       endp ; sp-analysis failed
+.text:000000000008CFC7
+.text:000000000008CFC7                                     ; ---------------------------------------------------------------------------
+.text:000000000008CFCC 0F 1F 40 00                                         align 10h

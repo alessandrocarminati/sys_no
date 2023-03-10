@@ -1,0 +1,69 @@
+.text:0000000000099E50 __malloc_fork_lock_parent       proc near               ; CODE XREF: fork+135↓p
+.text:0000000000099E50 ; __unwind {
+.text:0000000000099E50                 endbr64
+.text:0000000000099E54                 mov     eax, cs:dword_1EC264
+.text:0000000000099E5A                 test    eax, eax
+.text:0000000000099E5C                 jle     short locret_99ED0
+.text:0000000000099E5E                 push    r12
+.text:0000000000099E60                 push    rbp
+.text:0000000000099E61                 push    rbx
+.text:0000000000099E62                 mov     eax, fs:18h
+.text:0000000000099E6A                 test    eax, eax
+.text:0000000000099E6C                 jnz     short loc_99ED8
+.text:0000000000099E6E                 mov     edx, 1
+.text:0000000000099E73                 cmpxchg cs:dword_1EEE78, edx
+.text:0000000000099E7A
+.text:0000000000099E7A loc_99E7A:                              ; CODE XREF: __malloc_fork_lock_parent+97↓j
+.text:0000000000099E7A                                         ; __malloc_fork_lock_parent+A5↓j
+.text:0000000000099E7A                 lea     rbp, dword_1ECB80
+.text:0000000000099E81                 xor     r12d, r12d
+.text:0000000000099E84                 mov     rbx, rbp
+.text:0000000000099E87                 nop     word ptr [rax+rax+00000000h]
+.text:0000000000099E90
+.text:0000000000099E90 loc_99E90:                              ; CODE XREF: __malloc_fork_lock_parent+5E↓j
+.text:0000000000099E90                 mov     eax, fs:18h
+.text:0000000000099E98                 mov     edx, 1
+.text:0000000000099E9D                 test    eax, eax
+.text:0000000000099E9F                 jnz     short loc_99EB8
+.text:0000000000099EA1                 cmpxchg [rbx], edx
+.text:0000000000099EA4
+.text:0000000000099EA4 loc_99EA4:                              ; CODE XREF: __malloc_fork_lock_parent+6F↓j
+.text:0000000000099EA4                                         ; __malloc_fork_lock_parent+79↓j
+.text:0000000000099EA4                 mov     rbx, [rbx+870h]
+.text:0000000000099EAB                 cmp     rbx, rbp
+.text:0000000000099EAE                 jnz     short loc_99E90
+.text:0000000000099EB0                 pop     rbx
+.text:0000000000099EB1                 pop     rbp
+.text:0000000000099EB2                 pop     r12
+.text:0000000000099EB4                 retn
+.text:0000000000099EB4 ; ---------------------------------------------------------------------------
+.text:0000000000099EB5                 align 8
+.text:0000000000099EB8
+.text:0000000000099EB8 loc_99EB8:                              ; CODE XREF: __malloc_fork_lock_parent+4F↑j
+.text:0000000000099EB8                 mov     eax, r12d
+.text:0000000000099EBB                 lock cmpxchg [rbx], edx
+.text:0000000000099EBF                 jz      short loc_99EA4
+.text:0000000000099EC1                 mov     rdi, rbx
+.text:0000000000099EC4                 call    sub_945A0
+.text:0000000000099EC9                 jmp     short loc_99EA4
+.text:0000000000099EC9 ; ---------------------------------------------------------------------------
+.text:0000000000099ECB                 align 10h
+.text:0000000000099ED0
+.text:0000000000099ED0 locret_99ED0:                           ; CODE XREF: __malloc_fork_lock_parent+C↑j
+.text:0000000000099ED0                 retn
+.text:0000000000099ED0 ; ---------------------------------------------------------------------------
+.text:0000000000099ED1                 align 8
+.text:0000000000099ED8
+.text:0000000000099ED8 loc_99ED8:                              ; CODE XREF: __malloc_fork_lock_parent+1C↑j
+.text:0000000000099ED8                 xor     eax, eax
+.text:0000000000099EDA                 mov     edx, 1
+.text:0000000000099EDF                 lock cmpxchg cs:dword_1EEE78, edx
+.text:0000000000099EE7                 jz      short loc_99E7A
+.text:0000000000099EE9                 lea     rdi, dword_1EEE78
+.text:0000000000099EF0                 call    sub_945A0
+.text:0000000000099EF5                 jmp     short loc_99E7A
+.text:0000000000099EF5 ; } // starts at 99E50
+.text:0000000000099EF5 __malloc_fork_lock_parent       endp
+.text:0000000000099EF5
+.text:0000000000099EF5 ; ---------------------------------------------------------------------------
+.text:0000000000099EF7                 align 20h

@@ -1,0 +1,52 @@
+.text:00000000000E3110
+.text:00000000000E3110                                     ; =============== S U B R O U T I N E =======================================
+.text:00000000000E3110
+.text:00000000000E3110                                     ; Attributes: noreturn
+.text:00000000000E3110
+.text:00000000000E3110                                     ; void __noreturn exit(int status)
+.text:00000000000E3110                                                     public _exit
+.text:00000000000E3110                                     _exit           proc near               ; CODE XREF: abort+22C↑p
+.text:00000000000E3110                                                                             ; start+22↑p ...
+.text:00000000000E3110                                     ; __unwind {
+.text:00000000000E3110 F3 0F 1E FA                                         endbr64                 ; Alternative name is '_Exit'
+.text:00000000000E3114 4C 8B 0D 55 8D 10 00                                mov     r9, cs:val3
+.text:00000000000E311B 89 FA                                               mov     edx, edi
+.text:00000000000E311D 41 B8 E7 00 00 00                                   mov     r8d, 0E7h
+.text:00000000000E3123 BE 3C 00 00 00                                      mov     esi, 3Ch ; '<'
+.text:00000000000E3128 EB 15                                               jmp     short loc_E313F
+.text:00000000000E3128                                     ; ---------------------------------------------------------------------------
+.text:00000000000E312A 66 0F 1F 44 00 00                                   align 10h
+.text:00000000000E3130
+.text:00000000000E3130                                     loc_E3130:                              ; CODE XREF: _exit+3C↓j
+.text:00000000000E3130                                                                             ; _exit+44↓j
+.text:00000000000E3130 89 D7                                               mov     edi, edx        ; error_code
+.text:00000000000E3132 89 F0                                               mov     eax, esi
+.text:00000000000E3134 0F 05                                               syscall                 ; LINUX - sys_exit
+.text:00000000000E3136 48 3D 00 F0 FF FF                                   cmp     rax, 0FFFFFFFFFFFFF000h
+.text:00000000000E313C 77 22                                               ja      short loc_E3160
+.text:00000000000E313E
+.text:00000000000E313E                                     loc_E313E:                              ; CODE XREF: _exit+56↓j
+.text:00000000000E313E F4                                                  hlt
+.text:00000000000E313F                                     ; ---------------------------------------------------------------------------
+.text:00000000000E313F
+.text:00000000000E313F                                     loc_E313F:                              ; CODE XREF: _exit+18↑j
+.text:00000000000E313F 89 D7                                               mov     edi, edx
+.text:00000000000E3141 44 89 C0                                            mov     eax, r8d
+.text:00000000000E3144 0F 05                                               syscall                 ; LINUX -
+.text:00000000000E3146 48 3D 00 F0 FF FF                                   cmp     rax, 0FFFFFFFFFFFFF000h
+.text:00000000000E314C 76 E2                                               jbe     short loc_E3130
+.text:00000000000E314E F7 D8                                               neg     eax
+.text:00000000000E3150 64 41 89 01                                         mov     fs:[r9], eax
+.text:00000000000E3154 EB DA                                               jmp     short loc_E3130
+.text:00000000000E3154                                     ; ---------------------------------------------------------------------------
+.text:00000000000E3156 66 2E 0F 1F 84 00 00 00 00 00                       align 20h
+.text:00000000000E3160
+.text:00000000000E3160                                     loc_E3160:                              ; CODE XREF: _exit+2C↑j
+.text:00000000000E3160 F7 D8                                               neg     eax
+.text:00000000000E3162 64 41 89 01                                         mov     fs:[r9], eax
+.text:00000000000E3166 EB D6                                               jmp     short loc_E313E
+.text:00000000000E3166                                     ; } // starts at E3110
+.text:00000000000E3166                                     _exit           endp
+.text:00000000000E3166
+.text:00000000000E3166                                     ; ---------------------------------------------------------------------------
+.text:00000000000E3168 0F 1F 84 00 00 00 00 00                             align 10h
