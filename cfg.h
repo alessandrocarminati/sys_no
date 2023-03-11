@@ -25,6 +25,7 @@
 
 
 struct exec_item {
+	char 		*disass;
 	char		*name;
 	uint64_t	base_address;
 	uint32_t	length;

@@ -7,7 +7,7 @@
 #include "exec.h"
 #include "global_defines.h"
 #include "ansi_term.h"
-
+#include "fp.h"
 int execute_block_seq(struct exec_item *f, struct block_list *b){
 	uc_engine *uc;
 	int i, err;
@@ -55,7 +55,8 @@ int main(int argc, char *argv[]){
 		printf(BRED "[*]" RED " index out of range\n" reset);
 		return 1;
 		}
-	printf(BGRN "[*]" GRN " Function name "HYEL"%s"GRN", starting analysis\n" reset, f[index]->name);
+	printf(BGRN "[*]" GRN " Function name "HYEL"%s"GRN", presenting text anf starting analysis\n" reset, f[index]->name);
+	print_text_file(f[index]->disass);
 	printf(BGRN "[*]" GRN " Block statistics:\n" reset);
 	v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
 	p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
