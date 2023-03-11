@@ -36,6 +36,12 @@ int execute_block_seq(struct exec_item *f, struct block_list *b){
 	return 0;
 }
 
+static void print_help(const char *exec_name){
+	int i;
+
+	printf(YEL "type: \"%s n\"\nwhere n is one of the followings:\n" reset, exec_name);
+	for (i=1; i<=sizeof(f)/8-1; i++) printf("%d\t%s\n", i, f[i]->name);
+}
 
 int main(int argc, char *argv[]){
 	struct block_list v={.blocks=NULL, .blocks_no=0}, p={.blocks=NULL, .blocks_no=0};
@@ -44,14 +50,14 @@ int main(int argc, char *argv[]){
 	uc_engine *uc=NULL;
 
 	if (argc<=1) {
-		printf(BRED "[*]" RED " wrong cmdline\n"  reset);
+		print_help(argv[0]);
 		return 1;
 		}
 	if ((index=strtol (argv[1],NULL,10))==0) {
-		printf(BRED "[*]" RED " error\n" reset);
+		print_help(argv[0]);
 		return 1;
 		}
-	if (index>sizeof(f)+1) {
+	if (index>sizeof(f)/8) {
 		printf(BRED "[*]" RED " index out of range\n" reset);
 		return 1;
 		}
