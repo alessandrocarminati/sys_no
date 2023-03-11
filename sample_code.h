@@ -166,7 +166,7 @@ unsigned char function4[] = { // getentropy
 	'\xFF','\xFF','\xFF','\xC3','\x66','\x2E','\x0F','\x1F','\x84','\x00','\x00','\x00','\x00','\x00','\x66','\x90'
 };
 
-unsigned char function5[] = { //sub_8CFD0 
+unsigned char function5[] = { //sub_8CFD0
 	'\xF3','\x0F','\x1E','\xFA','\x55','\x83','\xE7','\x01','\x48','\x89','\xE5','\x41','\x57','\x41','\x89','\xFF',
 	'\x41','\x56','\x45','\x31','\xF6','\x41','\x55','\x41','\x54','\x45','\x31','\xE4','\x53','\x48','\x89','\xF3',
 	'\x48','\x83','\xEC','\x68','\x48','\x89','\x55','\xB0','\x48','\x89','\x4D','\xB8','\x4C','\x89','\x45','\xC0',
@@ -225,10 +225,11 @@ unsigned char function6[] = { // _exit
 	'\xF7','\xD8','\x64','\x41','\x89','\x01','\xEB','\xD6','\x0F','\x1F','\x84','\x00','\x00','\x00','\x00','\x00',
 };
 
-struct exec_item	f1= { .name="", .base_address=0x000a2380, .length=sizeof(function1), .text=function1 };
-struct exec_item	f2= { .name="", .base_address=0x00099F00, .length=sizeof(function2), .text=function2 };
-struct exec_item	f3= { .name="", .base_address=0x00099F00, .length=sizeof(function3), .text=function3 };
-struct exec_item	f4= { .name="", .base_address=0x000482B0, .length=sizeof(function4), .text=function4 };
-struct exec_item	f5= { .name="", .base_address=0x0008CFD0, .length=sizeof(function5), .text=function5 };
-struct exec_item	f6= { .name="", .base_address=0x000E3110, .length=sizeof(function6), .text=function6 };
+struct exec_item	f1= { .name="__pthread_mutex_lock_full", .base_address=0x000a2380, .length=sizeof(function1), .text=function1 };
+struct exec_item	f2= { .name="__malloc_fork_lock_parent", .base_address=0x00099F00, .length=sizeof(function2), .text=function2 };
+struct exec_item	f3= { .name="__malloc_fork_lock_parent (no ret)", .base_address=0x00099F00, .length=sizeof(function3), .text=function3 };
+struct exec_item	f4= { .name="getentropy", .base_address=0x000482B0, .length=sizeof(function4), .text=function4 };
+struct exec_item	f5= { .name="sub_8CFD0", .base_address=0x0008CFD0, .length=sizeof(function5), .text=function5 };
+struct exec_item	f6= { .name="_exit", .base_address=0x000E3110, .length=sizeof(function6), .text=function6 };
 
+struct exec_item *f[]={NULL, &f1, &f2, &f3, &f4, &f5, &f6};

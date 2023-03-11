@@ -7,7 +7,6 @@
 #include "exec.h"
 #include "global_defines.h"
 
-#define PAYLOAD f1
 int execute_block_seq(struct exec_item *f, struct block_list *b){
 	uc_engine *uc;
 	int i, err;
@@ -37,17 +36,30 @@ int execute_block_seq(struct exec_item *f, struct block_list *b){
 }
 
 
-int main(){
+int main(int argc, char *argv[]){
 	struct block_list v={.blocks=NULL, .blocks_no=0}, p={.blocks=NULL, .blocks_no=0};
 	struct Block *root;
-	int i, tmp=0;
+	int i, index, tmp=0;
 	uc_engine *uc=NULL;
 
+	if (argc<=1) {
+		printf("wrong cmdline\n");
+		return 1;
+		}
+	if ((index=strtol (argv[1],NULL,10))==0) {
+		printf("error\n");
+		return 1;
+		}
+	if (index>sizeof(f)+1) {
+		printf("index out of range\n");
+		return 1;
+		}
+	printf("function name %s, starting analysis\n", f[index]->name);
 	v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
 	p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
 
 	init_res();
-	root=build_cfg(&PAYLOAD);
+	root=build_cfg(f[index]);
 	print_plain_cfg(root);
 	printf("%s", cfg2dot(root));
 	while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
@@ -56,7 +68,7 @@ int main(){
 			printf("0x%08x, ", p.blocks_addr[i]->start);
 			}
 		printf("\n");
-		if (execute_block_seq(&PAYLOAD, &p)) {
+		if (execute_block_seq(f[index], &p)) {
 			printf("Premature termination!!!\n");
 			break;
 			}
