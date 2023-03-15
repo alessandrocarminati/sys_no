@@ -230,6 +230,6 @@ struct exec_item	f2= { .disass="__malloc_fork_lock_parent.txt",		.name="__malloc
 struct exec_item	f3= { .disass="__malloc_fork_lock_parent_no_ret.txt",	.name="__malloc_fork_lock_parent (no ret)",	.base_address=0x00099F00, .length=sizeof(function3), .text=function3 };
 struct exec_item	f4= { .disass="getentropy.txt", 			.name="getentropy",				.base_address=0x000482B0, .length=sizeof(function4), .text=function4 };
 struct exec_item	f5= { .disass="sub_8CE70.txt", 				.name="sub_8CFD0",				.base_address=0x0008CFD0, .length=sizeof(function5), .text=function5 };
-struct exec_item	f6= { .disass="_exit.txt", 				.name="_exit",					.base_address=0x000E3110, .length=sizeof(function6), .text=function6 };
+struct exec_item	f6= { .disass="_exit.txt.ansi",				.name="_exit",					.base_address=0x000E3110, .length=sizeof(function6), .text=function6 };
 
 struct exec_item *f[]={NULL, &f1, &f2, &f3, &f4, &f5, &f6};

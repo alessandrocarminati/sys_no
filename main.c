@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
 		printf(BRED "[*]" RED " index out of range\n" reset);
 		return 1;
 		}
-	printf(BGRN "[*]" GRN " Function name "HYEL"%s"GRN", presenting text anf starting analysis\n" reset, f[index]->name);
+	printf(BGRN "[*]" GRN " Function name "HYEL"%s"GRN", presenting text and starting analysis\n" reset, f[index]->name);
 	print_text_file(f[index]->disass);
 	printf(BGRN "[*]" GRN " Block statistics:\n" reset);
 	v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
 	print_plain_cfg(root);
 	printf(BGRN "[*]" GRN " Generating cfg for the given function\n" reset);
 	printf("%s", cfg2dot(root));
-	printf(BGRN "[*]" GRN " Generating paths and evaluating syscall number through guided execution\n" reset);
+	printf(BGRN "[*]" GRN " Generating paths from entry point to the syscalls\n" reset);
 	while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
 		DBG_PRINT(BRED "[*]" RED " Path found!\n");
 		for (i=0; i<p.blocks_no; i++) {
@@ -84,5 +84,6 @@ int main(int argc, char *argv[]){
 			break;
 			}
 		}
+	printf(BGRN "[*]" GRN " Results from guided execution:\n" reset);
 	print_res("{address: \"0x%08lx\", number:\"%d\"}\n");
 }
