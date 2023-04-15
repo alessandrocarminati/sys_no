@@ -1,9 +1,9 @@
 #include <unicorn/unicorn.h>
 #include <string.h>
 #include <stdint.h>
-#include "exec.h"
-#include "helper.h"
-#include "global_defines.h"
+#include "../include/exec.h"
+#include "../include/helper.h"
+#include "../include/global_defines.h"
 
 struct sys_results sys_res;
 

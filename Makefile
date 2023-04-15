@@ -5,34 +5,44 @@ CFLAGS = -Wall -Wextra -Werror -O2 -fPIC $(EXTRA_CFLAGS)
 LDFLAGS = -shared -lr_core
 
 PLUGIN_NAME = sysno
-PLUGIN_SRC = sysno_main.c
+PLUGIN_SRC = plugin/r2pi_sysno_main.c
 
 RADARE2_DIR = ../radare2
 
-all: $(PLUGIN_NAME).so
+BUILD_DIR = build
 
-$(PLUGIN_NAME).so: $(PLUGIN_SRC)
-        $(CC) $(CFLAGS) $(LDFLAGS) -o $@ -I$(RADARE2_DIR)/libr/include -I$(RADARE2_DIR)/shlr/sdb/src -L$(RADARE2_DIR)/libr/core/ $<
+all: plugin demo
+	echo all done.
 
-main: cfg.c paths.c exec.c helper.c fp.c main.c
-	$(CC) main.c cfg.c paths.c exec.c helper.c fp.c -lunicorn -lcapstone -g -o main
-clean:
-	rm main
-objects: cfg.o paths.o exec.o helper.o
+plugin: $(BUILD_DIR)/$(PLUGIN_NAME).so
+	echo plugin is available at $(BUILD_DIR)/$(PLUGIN_NAME).so
+
+demo: $(BUILD_DIR)/demo
+	echo Demo app is at $(BUILD_DIR)/demo
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+$(BUILD_DIR)/$(PLUGIN_NAME).so: $(PLUGIN_SRC) $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -I$(RADARE2_DIR)/libr/include -I$(RADARE2_DIR)/shlr/sdb/src -L$(RADARE2_DIR)/libr/core/ $(PLUGIN_SRC)
+
+$(BUILD_DIR)/demo: $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o demo/fp.c demo/main.c
+	$(CC) $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o demo/fp.c demo/main.c -lunicorn -lcapstone -g -o $(BUILD_DIR)/demo
+
+objects: build build/cfg.o build/paths.o build/exec.o build/helper.o
 	echo
 
-cfg.o: cfg.c
-	$(CC) $< -c -o $@
+$(BUILD_DIR)/cfg.o: $(BUILD_DIR) src/cfg.c
+	$(CC) src/cfg.c -c -o $@
 
-paths.o: paths.c
-	$(CC) $< -c -o $@
+$(BUILD_DIR)/paths.o: $(BUILD_DIR) src/paths.c
+	$(CC) src/paths.c -c -o $@
 
-exec.o: exec.c
-	$(CC) $< -c -o $@
+$(BUILD_DIR)/exec.o: $(BUILD_DIR) src/exec.c
+	$(CC) src/exec.c -c -o $@
 
-helper.o: helper.c
-	$(CC) $< -c -o $@
+$(BUILD_DIR)/helper.o: $(BUILD_DIR) src/helper.c
+	$(CC) src/helper.c -c -o $@
 
 clean:
-        rm -f $(PLUGIN_NAME).so
-
+	rm -rf $(BUILD_DIR)

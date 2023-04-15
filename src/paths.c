@@ -1,6 +1,6 @@
-#include "cfg.h"
-#include "paths.h"
-#include "global_defines.h"
+#include "../include/cfg.h"
+#include "../include/paths.h"
+#include "../include/global_defines.h"
 
 int search_next(struct Block *current, int res_type, struct block_list *visited, struct block_list *path, int path_len, int *itn_no) {
 

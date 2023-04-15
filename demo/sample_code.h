@@ -1,4 +1,4 @@
-#include "cfg.h"
+#include "../include/cfg.h"
 
 unsigned char function1[] = {  // glibc-2.34-40.el9.x86_64_libc: __pthread_mutex_lock_full   0x00000000000A2380
 	'\x41','\x57','\x41','\x56','\x41','\x55','\x41','\x54','\x55','\x48','\x89','\xfd','\x53','\x48','\x83','\xec',

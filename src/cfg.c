@@ -3,10 +3,10 @@
 #include <string.h>
 #include <capstone/capstone.h>
 
-#include "uthash/src/utlist.h"
-#include "consts.h"
-#include "cfg.h"
-#include "global_defines.h"
+#include "../uthash/src/utlist.h"
+#include "../include/consts.h"
+#include "../include/cfg.h"
+#include "../include/global_defines.h"
 
 static uint64_t prev_instr(uint64_t curr, cs_insn *insn, int instr_no){
 	int i;

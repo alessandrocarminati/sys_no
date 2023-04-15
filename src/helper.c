@@ -1,7 +1,7 @@
 #include <execinfo.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "global_defines.h"
+#include "../include/global_defines.h"
 
 #define BACKTRACE_DEPTH 50
 

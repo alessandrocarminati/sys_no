@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <unicorn/unicorn.h>
 
+#include "../include/cfg.h"
+#include "../include/paths.h"
+#include "../include/exec.h"
+#include "../include/global_defines.h"
 #include "sample_code.h"
-#include "cfg.h"
-#include "paths.h"
-#include "exec.h"
-#include "global_defines.h"
 #include "ansi_term.h"
 #include "fp.h"
 int execute_block_seq(struct exec_item *f, struct block_list *b){
