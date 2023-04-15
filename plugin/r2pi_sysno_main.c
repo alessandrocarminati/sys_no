@@ -16,7 +16,7 @@ RCorePlugin core_plugin_desc = {
 	.name = "Syscall Unicorn",
 	.desc = "It provides syscall numbers used in a given function",
 	.license = "MIT",
-	.author = "Alessandro Carminati",
+	.author = AUTHOR,
 	.version = "0.0.1",
 	.call = do_sysno,
 };
