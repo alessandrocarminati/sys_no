@@ -5,10 +5,9 @@ CFLAGS = -Wall -Wextra -Werror -O2 -fPIC $(EXTRA_CFLAGS)
 LDFLAGS = -shared -lr_core
 
 PLUGIN_NAME = sysno
+RADARE_LOCAL_PLUGIN = ~/.local/share/radare2/plugin
 PLUGIN_SRC = plugin/r2pi_sysno_main.c
-
 RADARE2_DIR = ../radare2
-
 BUILD_DIR = build
 
 all: plugin demo
@@ -46,3 +45,7 @@ $(BUILD_DIR)/helper.o: $(BUILD_DIR) src/helper.c
 
 clean:
 	rm -rf $(BUILD_DIR)
+
+install: plugin
+	cp $(BUILD_DIR)/$(PLUGIN_NAME).so $(RADARE_LOCAL_PLUGIN)
+	echo Radare Plugin installed at $(RADARE_LOCAL_PLUGIN)
