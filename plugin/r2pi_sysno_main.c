@@ -1,11 +1,20 @@
 #include <r_core.h>
 #include <string.h>
+#include "r2pi_sysno.h"
 
 
 static int do_sysno(void* user, const char* cmd) {
+	int n;
+	char *args[7];
+
 	if (strncmp("sysno", cmd, 5)==0) {
+		n=PROC_CMD_PARSE(cmd, args);
+		if ((n<2)|| (n>3)) {
+			eprintf ("Dummy! syntax error!\n");
+			return true;
+			}
 		RCore *core = (RCore *) user;
-		eprintf ("Dummy! [0x%08lx] %s\n", core->offset, cmd);
+		eprintf ("Dummy! [0x%08lx] %s argc=%d\n", core->offset, cmd, n);
 		return true;
 		}
 	return false;
