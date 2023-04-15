@@ -3,7 +3,7 @@
 #include <string.h>
 #include <capstone/capstone.h>
 
-#include "../uthash/src/utlist.h"
+#include "../include/uthash/src/utlist.h"
 #include "../include/consts.h"
 #include "../include/cfg.h"
 #include "../include/global_defines.h"
