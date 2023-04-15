@@ -5,4 +5,4 @@ cfg2
 main
 notes
 *.o
-
+build/
