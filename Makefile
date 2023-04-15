@@ -7,7 +7,7 @@ LDFLAGS = -shared -lr_core
 AUTHOR = $(shell git config user.name)
 
 PLUGIN_NAME = sysno
-RADARE_LOCAL_PLUGIN = ~/.local/share/radare2/plugin
+RADARE_LOCAL_PLUGIN = ~/.local/share/radare2/plugins
 PLUGIN_SRC = plugin/r2pi_sysno_main.c
 RADARE2_DIR = ../radare2
 BUILD_DIR = build
