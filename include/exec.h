@@ -8,6 +8,7 @@
 #define STACK_TOP    0x55aa55aa00008000
 #define MEM_SIZE_4KB 0x1000ULL
 #define MEM_SIZE_2MB 0x200000ULL
+#define RES_SIZE 4096
 
 #define SUCCESS	0
 #define SYSCALL 1
