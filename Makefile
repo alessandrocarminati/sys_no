@@ -1,6 +1,6 @@
 CC=clang
 
-EXTRA_CFLAGS= -Wno-error=unused-parameter
+EXTRA_CFLAGS= -Wno-error=unused-parameter -Wno-error=unused-function
 CFLAGS = -Wall -Wextra -Werror -O2 -fPIC $(EXTRA_CFLAGS)
 LDFLAGS = -shared -lr_core
 
