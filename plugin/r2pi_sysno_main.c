@@ -1,5 +1,6 @@
 #include <r_core.h>
 #include <string.h>
+#include "../include/global_defines.h"
 #include "r2pi_sysno.h"
 
 
