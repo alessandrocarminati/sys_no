@@ -47,7 +47,6 @@ int main(int argc, char *argv[]){
 	struct block_list v={.blocks=NULL, .blocks_no=0}, p={.blocks=NULL, .blocks_no=0};
 	struct Block *root;
 	int i, index, tmp=0;
-	uc_engine *uc=NULL;
 
 	if (argc<=1) {
 		print_help(argv[0]);
