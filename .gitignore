@@ -6,3 +6,4 @@ main
 notes
 *.o
 build/
+*.so
