@@ -43,7 +43,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(BUILD_DIR)/$(PLUGIN_NAME).so: $(PLUGIN_SRC) $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -I$(RADARE2_DIR)/libr/include -I$(RADARE2_DIR)/shlr/sdb/src -L$(RADARE2_DIR)/libr/core/ $(PLUGIN_SRC) -DAUTHOR="\"$(AUTHOR)\""
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -I$(RADARE2_DIR)/libr/include -I$(RADARE2_DIR)/shlr/sdb/src -L$(RADARE2_DIR)/libr/core/ $(PLUGIN_SRC) $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o -DAUTHOR="\"$(AUTHOR)\"" -lunicorn -lcapstone
 
 $(BUILD_DIR)/demo: $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o demo/fp.c demo/main.c $(BUILD_DIR)/generate_header
 	$(CC) $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o demo/fp.c demo/main.c -lunicorn -lcapstone -g -o $(BUILD_DIR)/demo

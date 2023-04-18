@@ -1,6 +1,9 @@
 #ifndef R2PI_SYSNO_H
 
 #define R2PI_SYSNO_H
+
+#define PLUGIN_NAME "sysno"
+
 #define PROC_CMD_PARSE(cmd, args) 			\
 ({							\
 	int i=0,argc=0;					\
