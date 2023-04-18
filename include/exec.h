@@ -31,12 +31,13 @@ static bool hook_mem_invalid(uc_engine *uc, uc_mem_type type, uint64_t address, 
 static bool hook_instruction(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data);
 static void hook_mem_fetch_check(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data);
 void dump_registers(uc_engine *uc);
-int execute_block(uc_engine *uc, struct Block *b);
+int execute_block(uc_engine *uc, struct Block *b, struct sys_results *sys_res);
 int emu_init(unsigned char * code, uint64_t base_address, int size, uc_engine **uc);
 void emu_stop(uc_engine *uc);
-void init_res(void);
-void ins_res(uint64_t addr, uint32_t num);
-void print_res(const char *fmt);
+struct sys_results *init_res(void);
+void ins_res(struct sys_results *sys_res, uint64_t addr, uint32_t num);
+void print_res(struct sys_results *sys_res, const char *fmt);
+void dispose_res(struct sys_results *sys_res, char *buf);
 
 #endif
 

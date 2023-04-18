@@ -5,8 +5,6 @@
 #include "../include/helper.h"
 #include "../include/global_defines.h"
 
-struct sys_results sys_res;
-
 static bool x86_invert_jump(uint8_t *insn) {
 	uint16_t x86_j_near[]=
 	{0x800F, 0x810F, 0x880F, 0x890F, 0x840F, 0x850F, 0x820F, 0x830F, 0x860F, 0x870F, 0x8C0F, 0x8D0F, 0x8E0F, 0x8F0F, 0x8A0F, 0x8B0F};
@@ -64,7 +62,7 @@ static void hook_syscall(uc_engine *uc, void *user_data) {
 
 	uc_reg_read(uc, UC_X86_REG_RAX, &rax);
 	uc_reg_read(uc, UC_X86_REG_RIP, &rip);
-	ins_res(rip,rax);
+	ins_res((struct sys_results *)user_data, rip,rax);
 	DBG_PRINT("############### Syscall [0x%08lx] @0x%08lx ###############\n", rax, rip);
 	print_trace();
 }
@@ -106,7 +104,7 @@ void dump_registers(uc_engine *uc){
         printf(">>> RIP = 0x%lx\n", reg);
 
 }
-int execute_block(uc_engine *uc, struct Block *b) {
+int execute_block(uc_engine *uc, struct Block *b, struct sys_results *sys_res) {
 	uc_err err;
 	uc_hook trace1, trace2, trace3;
 	uint64_t reg;
@@ -119,7 +117,7 @@ int execute_block(uc_engine *uc, struct Block *b) {
 	uc_hook_add(uc, &trace1, UC_HOOK_MEM_READ_UNMAPPED | UC_HOOK_MEM_WRITE_UNMAPPED, hook_mem_invalid, NULL, 1, 0);
 
 	DBG_PRINT("Settig up hooks on syscalls events\n");
-	uc_hook_add(uc, &trace2, UC_HOOK_INSN, hook_syscall, NULL, 1, 0, UC_X86_INS_SYSCALL);
+	uc_hook_add(uc, &trace2, UC_HOOK_INSN, hook_syscall, sys_res, 1, 0, UC_X86_INS_SYSCALL);
 
 	DBG_PRINT("Executing block @(0x%08x ~ 0x%08x) [%d instructions]\n", b->start, b->end, b->instr_cnt);
 	err = uc_emu_start(uc, b->start, 0, 0, b->instr_cnt);
@@ -173,31 +171,38 @@ void emu_stop(uc_engine *uc){
 	uc_close(uc);
 }
 
-void init_res(void){
-        memset(&sys_res, 0, sizeof(struct sys_results));
+struct sys_results *init_res(void){
+	void *sys_res = malloc(sizeof(struct sys_results));;
+        memset(sys_res, 0, sizeof(struct sys_results));
+	return (struct sys_results *) sys_res;
 }
 
-void ins_res(uint64_t addr, uint32_t num){
+void ins_res(struct sys_results *sys_res, uint64_t addr, uint32_t num){
 	int i=0;
 	bool present=false;
 
-	while (i<sys_res.num) {
-		if (sys_res.addr[i]==addr) {
+	while (i<sys_res->num) {
+		if (sys_res->addr[i]==addr) {
 			present=true;
 			}
 		i++;
 		}
 	if (!present) {
-		sys_res.addr[i]=addr;
-		sys_res.sys_no[i]=num;
-		sys_res.num++;
+		sys_res->addr[i]=addr;
+		sys_res->sys_no[i]=num;
+		sys_res->num++;
 		}
 }
-void print_res(const char *fmt){
+char *print_res(struct sys_results *sys_res, const char *fmt){
 	int i=0;
 
-	for (i=0; i<sys_res.num; i++) {
-		printf(fmt, sys_res.addr[i], sys_res.sys_no[i]);
+	buf=(char *)malloc(RES_SIZE);
+	memset(buf, 0, RES_SIZE);
+	for (i=0; i<sys_res->num; i++) {
+		printf(fmt, sys_res->addr[i], sys_res->sys_no[i]);
 		}
-
+}
+void dispose_res(struct sys_results *sys_res, char *buf){
+	free(sys_res);
+	free(buf);
 }

@@ -8,7 +8,8 @@
 #include "../include/ansi_term.h"
 #include "sample_code.h"
 #include "fp.h"
-int execute_block_seq(struct exec_item *f, struct block_list *b){
+
+int execute_block_seq(struct exec_item *f, struct block_list *b, struct sys_results *sys_res){
 	uc_engine *uc;
 	int i, err;
 
@@ -21,7 +22,7 @@ int execute_block_seq(struct exec_item *f, struct block_list *b){
 	for (i=0; i<b->blocks_no; i++) {
 		DBG_PRINT(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution #%02d start <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", i);
 		DBG_PRINT("Execute block #%d, start=0x%08x, end=0x%08x\n",i, b->blocks_addr[i]->start, b->blocks_addr[i]->end);
-		err=execute_block(uc, b->blocks_addr[i]);
+		err=execute_block(uc, b->blocks_addr[i], sys_res);
 		DBG_PRINT("Execution error flag=%d\n",err);
 		if ((err!=SUCCESS)&&(err!=SYSCALL)) {
 			printf("exit!\n");
@@ -47,6 +48,7 @@ int main(int argc, char *argv[]){
 	struct block_list v={.blocks=NULL, .blocks_no=0}, p={.blocks=NULL, .blocks_no=0};
 	struct Block *root;
 	int i, index, tmp=0;
+	struct sys_results *sys_res;
 
 	if (argc<=1) {
 		print_help(argv[0]);
@@ -66,7 +68,7 @@ int main(int argc, char *argv[]){
 	v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
 	p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
 
-	init_res();
+	sys_res=init_res();
 	root=build_cfg(f[index]);
 	print_plain_cfg(root);
 	printf(BGRN "[*]" GRN " Generating cfg for the given function\n" reset);
@@ -78,11 +80,12 @@ int main(int argc, char *argv[]){
 			printf("0x%08x, ", p.blocks_addr[i]->start);
 			}
 		printf("\n");
-		if (execute_block_seq(f[index], &p)) {
+		if (execute_block_seq(f[index], &p, sys_res)) {
 			printf(BRED "[*]" RED " Premature termination!!!\n" reset);
 			break;
 			}
 		}
 	printf(BGRN "[*]" GRN " Results from guided execution:\n" reset);
-	print_res("{address: \"0x%08lx\", number:\"%d\"}\n");
+	print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}\n");
+	dispose_res(sys_res, buf);
 }
