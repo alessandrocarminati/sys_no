@@ -49,6 +49,7 @@ int main(int argc, char *argv[]){
 	struct Block *root;
 	int i, index, tmp=0;
 	struct sys_results *sys_res;
+	char *buf;
 
 	if (argc<=1) {
 		print_help(argv[0]);
@@ -86,6 +87,7 @@ int main(int argc, char *argv[]){
 			}
 		}
 	printf(BGRN "[*]" GRN " Results from guided execution:\n" reset);
-	print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}\n");
+	buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}\n");
+	printf("%s\n", buf);
 	dispose_res(sys_res, buf);
 }

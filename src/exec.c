@@ -194,13 +194,15 @@ void ins_res(struct sys_results *sys_res, uint64_t addr, uint32_t num){
 		}
 }
 char *print_res(struct sys_results *sys_res, const char *fmt){
-	int i=0;
+	int i=0, offset=0;
+	char *buf;
 
 	buf=(char *)malloc(RES_SIZE);
 	memset(buf, 0, RES_SIZE);
 	for (i=0; i<sys_res->num; i++) {
-		printf(fmt, sys_res->addr[i], sys_res->sys_no[i]);
+		offset+=sprintf((buf+offset), fmt, sys_res->addr[i], sys_res->sys_no[i]);
 		}
+	return buf;
 }
 void dispose_res(struct sys_results *sys_res, char *buf){
 	free(sys_res);

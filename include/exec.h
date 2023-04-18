@@ -36,7 +36,7 @@ int emu_init(unsigned char * code, uint64_t base_address, int size, uc_engine **
 void emu_stop(uc_engine *uc);
 struct sys_results *init_res(void);
 void ins_res(struct sys_results *sys_res, uint64_t addr, uint32_t num);
-void print_res(struct sys_results *sys_res, const char *fmt);
+char *print_res(struct sys_results *sys_res, const char *fmt);
 void dispose_res(struct sys_results *sys_res, char *buf);
 
 #endif
