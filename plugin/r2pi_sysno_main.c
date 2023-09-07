@@ -82,6 +82,7 @@ static int do_sysno(void* user, const char* cmd) {
 						break;
 					}
 				}
+				patch_syscall_at(&f, sys_res->addr[sys_res->num - 1]);
 				buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}");
 				eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
 				eprintf("%s\n", buf);

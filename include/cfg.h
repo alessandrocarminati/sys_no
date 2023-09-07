@@ -55,6 +55,7 @@ struct block_list {
 	int     blocks_no;
 };
 
+void patch_syscall_at(struct exec_item *f, uint64_t addr);
 void patch_calls(struct exec_item *f);
 struct Block *build_cfg(struct exec_item *f);
 void print_plain_cfg(struct Block *root);

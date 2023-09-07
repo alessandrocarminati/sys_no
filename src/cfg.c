@@ -27,6 +27,13 @@ static uint64_t next_instr(uint64_t curr, cs_insn *insn, int instr_no){
 }
 
 
+void patch_syscall_at(struct exec_item *f, uint64_t addr)
+{
+	DBG_PRINT("syscall patching, write 2 nop at 0x%x\n", addr);
+	*(f->text + addr) = 0x90;
+	*(f->text + addr + 1) = 0x90;
+}
+
 void patch_calls(struct exec_item *f)
 {
 	int patch[MAX_CALL_PATCH_CNT] = {};
