@@ -21,6 +21,43 @@
 
 #define SYS_MAX_RES 20
 
+#define BT2UCARCH(bintype) ( \
+	(bintype == BIN_X86_32) ? UC_ARCH_X86 : \
+	(bintype == BIN_PPC_32) ? UC_ARCH_PPC : \
+	(bintype == BIN_MIPS_32) ? UC_ARCH_MIPS : \
+	(bintype == BIN_ARM_32) ? UC_ARCH_ARM : \
+	(bintype == BIN_X86_64) ? UC_ARCH_X86 : \
+	(bintype == BIN_PPC_64) ? UC_ARCH_PPC : \
+	(bintype == BIN_MIPS_64) ? UC_ARCH_MIPS : \
+	(bintype == BIN_ARM_64) ? UC_ARCH_ARM64 : \
+	BIN_UNKNOWN )
+#define BT2UCMODE(bintype) ( \
+	(bintype == BIN_X86_32) ? UC_MODE_32 : \
+	(bintype == BIN_PPC_32) ? UC_MODE_PPC32 : \
+	(bintype == BIN_MIPS_32) ? UC_MODE_MIPS32 : \
+	(bintype == BIN_ARM_32) ? UC_MODE_ARM : \
+	(bintype == BIN_X86_64) ? UC_MODE_64 : \
+	(bintype == BIN_PPC_64) ? UC_MODE_PPC64 : \
+	(bintype == BIN_MIPS_64) ? UC_MODE_MIPS64 : \
+	(bintype == BIN_ARM_64) ? UC_MODE_ARM : \
+	BIN_UNKNOWN )
+#define ARCH_SP_REG(bintype) ( \
+	(bintype == BIN_X86_32) ? UC_X86_REG_ESP : \
+	(bintype == BIN_MIPS_32) ? UC_MIPS_REG_SP : \
+	(bintype == BIN_ARM_32) ? UC_ARM_REG_SP : \
+	(bintype == BIN_X86_64) ? UC_X86_REG_RSP : \
+	(bintype == BIN_ARM_64) ? UC_ARM64_REG_SP : \
+	BIN_UNKNOWN )
+#define ARCH_PC_REG(bintype) ( \
+	(bintype == BIN_X86_64) ? UC_X86_REG_RIP : \
+	BIN_UNKNOWN )
+
+#define ARCH_SYSNO_REG(bintype) ( \
+	(bintype == BIN_X86_64) ? UC_X86_REG_RAX : \
+	BIN_UNKNOWN )
+
+#define ALIGN64K(bintype) ((bintype & BIN_BITS_MSK)==0?0xffff0000:0xffffffffffff0000)
+
 struct sys_results {
 	uint64_t addr[SYS_MAX_RES];
 	uint32_t sys_no[SYS_MAX_RES];

@@ -58,7 +58,7 @@
 	  (bintype == BIN_X86_64) ? CS_MODE_64 : \
 	  (bintype == BIN_PPC_64) ? CS_MODE_64 : \
 	  (bintype == BIN_MIPS_64) ? CS_MODE_64 : \
-	  (bintype == BIN_ARM_64) ? CS_MODE_V8 : \
+	  (bintype == BIN_ARM_64) ? CS_MODE_ARM : \
 	  BIN_UNKNOWN )
 
 #define BT_SUPPORTED(bintype) (\
