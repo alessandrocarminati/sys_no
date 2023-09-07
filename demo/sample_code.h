@@ -225,11 +225,36 @@ unsigned char function6[] = { // _exit
 	'\xF7','\xD8','\x64','\x41','\x89','\x01','\xEB','\xD6','\x0F','\x1F','\x84','\x00','\x00','\x00','\x00','\x00',
 };
 
+
+unsigned char function7[] = { // _exit.ppc32
+	'\x94','\x21','\xff','\xe0','\x42','\x9f','\x00','\x05','\x93','\xc1','\x00','\x18','\x7f','\xc8','\x02','\xa6',
+	'\x3f','\xde','\x00','\x11','\x93','\xa1','\x00','\x14','\x3b','\xde','\xf9','\x40','\x93','\x81','\x00','\x10',
+	'\x83','\xbe','\xfc','\x3c','\x93','\xe1','\x00','\x1c','\x7c','\x7c','\x1b','\x78','\x7f','\xbd','\x12','\x14',
+	'\x3b','\xe0','\xf0','\x00','\x38','\x00','\x00','\xea','\x7f','\x83','\xe3','\x78','\x44','\x00','\x00','\x02',
+	'\x7c','\x00','\x00','\x26','\x7c','\x09','\x03','\x78','\x38','\x00','\x00','\x01','\x75','\x29','\x10','\x00',
+	'\x7c','\x69','\x1b','\x78','\x7f','\x83','\xe3','\x78','\x41','\x82','\x00','\x08','\x7d','\x29','\x00','\xd0',
+	'\x7c','\x09','\xf8','\x40','\x41','\x81','\x00','\x38','\x44','\x00','\x00','\x02','\x7c','\x00','\x00','\x26',
+	'\x74','\x09','\x10','\x00','\x41','\x82','\x00','\x08','\x7c','\x63','\x00','\xd0','\x7c','\x03','\xf8','\x40',
+	'\x41','\x81','\x00','\x0c','\x00','\x00','\x00','\x00',
+};
+
+unsigned char function8[] = { // _exit.aarch64
+	'\x01','\x7C','\x40','\x93','\x23','\x07','\x00','\xD0','\x63','\xE4','\x46','\xF9','\x42','\xD0','\x3B','\xD5',
+	'\xE0','\x03','\x01','\xAA','\xC8','\x0B','\x80','\xD2','\x01','\x00','\x00','\xD4','\x1F','\x04','\x40','\xB1',
+	'\x08','\x01','\x00','\x54','\x1F','\x20','\x03','\xD5','\x00','\x7D','\x20','\xD4','\xE0','\x03','\x01','\xAA',
+	'\xC8','\x0B','\x80','\xD2','\x01','\x00','\x00','\xD4','\x1F','\x04','\x40','\xB1','\x69','\xFF','\xFF','\x54',
+	'\xE0','\x03','\x00','\x4B','\x40','\x68','\x23','\xB8','\x00','\x7D','\x20','\xD4','\xF8','\xFF','\xFF','\x17',
+};
+
+
+
 struct exec_item	f1= { .bin_type=BIN_X86_64,	.disass="__pthread_mutex_lock_full.txt",		.name="__pthread_mutex_lock_full",		.base_address=0x000a2380, .length=sizeof(function1), .text=function1 };
 struct exec_item	f2= { .bin_type=BIN_X86_64,	.disass="__malloc_fork_lock_parent.txt",		.name="__malloc_fork_lock_parent",		.base_address=0x00099F00, .length=sizeof(function2), .text=function2 };
 struct exec_item	f3= { .bin_type=BIN_X86_64,	.disass="__malloc_fork_lock_parent_no_ret.txt",		.name="__malloc_fork_lock_parent (no ret)",	.base_address=0x00099F00, .length=sizeof(function3), .text=function3 };
 struct exec_item	f4= { .bin_type=BIN_X86_64,	.disass="getentropy.txt", 				.name="getentropy",				.base_address=0x000482B0, .length=sizeof(function4), .text=function4 };
 struct exec_item	f5= { .bin_type=BIN_X86_64,	.disass="sub_8CE70.txt", 				.name="sub_8CFD0",				.base_address=0x0008CFD0, .length=sizeof(function5), .text=function5 };
 struct exec_item	f6= { .bin_type=BIN_X86_64,	.disass="_exit.txt.ansi",				.name="_exit",					.base_address=0x000E3110, .length=sizeof(function6), .text=function6 };
+struct exec_item	f7= { .bin_type=BIN_PPC_32,	.disass="_exitppc.txt.ansi",				.name="_exit",					.base_address=0x000c0678, .length=sizeof(function7), .text=function7 };
+struct exec_item	f8= { .bin_type=BIN_ARM_64,	.disass="_exitaarch64.txt",				.name="_exit",					.base_address=0x000b98c0, .length=sizeof(function8), .text=function8 };
 
-struct exec_item *f[]={NULL, &f1, &f2, &f3, &f4, &f5, &f6};
+struct exec_item *f[]={NULL, &f1, &f2, &f3, &f4, &f5, &f6, &f7, &f8};
