@@ -185,7 +185,7 @@ struct Block *build_cfg(struct exec_item *f) {
 			if (i+1 < count) {
 				DBG_PRINT("[%d] X86_INS_JMP=%d\n", blk_cnt,X86_INS_JMP);
 				DBG_PRINT("[%d] Last instruction for this block at 0x%08lx id=%d, mnemo=%s (insn[i].id != X86_INS_JMP)=%d\n", blk_cnt, insn[i].address, insn[i].id, insn[i].mnemonic, strcmp(insn[i].mnemonic, "jmp"));
-				if (insn[i].id != X86_INS_JMP) {
+				if (strcmp(insn[i].mnemonic, "jmp")) {
 					DBG_PRINT("[%d] Hit Block termination @0x%08lx set forward_addr=0x%08lx\n", blk_cnt, insn[i].address, insn[i+1].address);
 					if (!current->ret) current->forward_addr=insn[i+1].address;
 					}
