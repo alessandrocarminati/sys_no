@@ -1,0 +1,42 @@
+┌ 136: void sym._exit (int status);
+│           ; arg int status @ r3
+│           ; var int32_t var_10h @ r1+0x10
+│           ; var int32_t var_14h @ r1+0x14
+│           ; var int32_t var_18h @ r1+0x18
+│           ; var int32_t var_1ch @ r1+0x1c
+│           0x000c0678      9421ffe0       stwu r1, -0x20(r1)
+│       ┌─< 0x000c067c      429f0005       bdnzl 0xc0680
+│       └─> 0x000c0680      93c10018       stw r30, 0x18(r1)
+│           0x000c0684      7fc802a6       mflr r30
+│           0x000c0688      3fde0011       addis r30, r30, 0x11
+│           0x000c068c      93a10014       stw r29, 0x14(r1)
+│           0x000c0690      3bdef940       addi r30, r30, -aav.0x000006c0
+│           0x000c0694      93810010       stw r28, 0x10(r1)
+│           0x000c0698      83befc3c       lwz r29, -0x3c4(r30)
+│           0x000c069c      93e1001c       stw r31, 0x1c(r1)
+│           0x000c06a0      7c7c1b78       mr r28, r3                  ; status
+│           0x000c06a4      7fbd1214       add r29, r29, r2
+│           0x000c06a8      3be0f000       li r31, -aav.0x00001000
+│           0x000c06ac      380000ea       li r0, 0xea
+│           0x000c06b0      7f83e378       mr r3, r28
+│           ;-- syscall.32.44:
+│           0x000c06b4      44000002       sc
+│           0x000c06b8      7c000026       mfcr r0
+│           0x000c06bc      7c090378       mr r9, r0
+│           0x000c06c0      38000001       li r0, 1
+│           0x000c06c4      75291000       andis. r9, r9, aav.0x00001000
+│           0x000c06c8      7c691b78       mr r9, r3
+│           0x000c06cc      7f83e378       mr r3, r28
+│           0x000c06d0      41820008       beq 0xc06d8
+│           0x000c06d4      7d2900d0       neg r9, r9
+│           0x000c06d8      7c09f840       cmplw r9, r31
+│           0x000c06dc      41810038       bgt 0xc0714
+│           ;-- syscall.32.45:
+│           0x000c06e0      44000002       sc
+│           0x000c06e4      7c000026       mfcr r0
+│           0x000c06e8      .dword 0x74091000
+│           0x000c06ec      41820008       beq 0xc06f4
+│           0x000c06f0      7c6300d0       neg r3, r3
+│           0x000c06f4      7c03f840       cmplw r3, r31
+│           0x000c06f8      4181000c       bgt 0xc0704
+└           0x000c06fc      00000000       invalid

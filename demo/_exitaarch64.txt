@@ -1,0 +1,37 @@
+.text:00000000000B98C0                         ; =============== S U B R O U T I N E =======================================
+.text:00000000000B98C0
+.text:00000000000B98C0                         ; Attributes: noreturn
+.text:00000000000B98C0
+.text:00000000000B98C0                         ; void __noreturn exit(int status)
+.text:00000000000B98C0                                         EXPORT _exit
+.text:00000000000B98C0                         _exit                                   ; CODE XREF: abort+1C0↑p
+.text:00000000000B98C0                                                                 ; __libc_main+20↑p ...
+.text:00000000000B98C0                         ; __unwind {
+.text:00000000000B98C0 01 7C 40 93                             SXTW            X1, W0  ; Alternative name is '_Exit'
+.text:00000000000B98C4 23 07 00 D0                             ADRP            X3, #off_19FDC8@PAGE
+.text:00000000000B98C8 63 E4 46 F9                             LDR             X3, [X3,#off_19FDC8@PAGEOFF]
+.text:00000000000B98CC 42 D0 3B D5                             MRS             X2, #3, c13, c0, #2
+.text:00000000000B98D0 E0 03 01 AA                             MOV             X0, X1
+.text:00000000000B98D4 C8 0B 80 D2                             MOV             X8, #0x5E
+.text:00000000000B98D8 01 00 00 D4                             SVC             0
+.text:00000000000B98DC 1F 04 40 B1                             CMN             X0, #1,LSL#12
+.text:00000000000B98E0 08 01 00 54                             B.HI            loc_B9900
+.text:00000000000B98E4 1F 20 03 D5                             NOP
+.text:00000000000B98E8
+.text:00000000000B98E8                         loc_B98E8                               ; CODE XREF: _exit+3C↓j
+.text:00000000000B98E8 00 7D 20 D4                             BRK             #0x3E8
+.text:00000000000B98EC
+.text:00000000000B98EC                         loc_B98EC                               ; CODE XREF: _exit+4C↓j
+.text:00000000000B98EC E0 03 01 AA                             MOV             X0, X1
+.text:00000000000B98F0 C8 0B 80 D2                             MOV             X8, #0x5E
+.text:00000000000B98F4 01 00 00 D4                             SVC             0
+.text:00000000000B98F8 1F 04 40 B1                             CMN             X0, #1,LSL#12
+.text:00000000000B98FC 69 FF FF 54                             B.LS            loc_B98E8
+.text:00000000000B9900
+.text:00000000000B9900                         loc_B9900                               ; CODE XREF: _exit+20↑j
+.text:00000000000B9900 E0 03 00 4B                             NEG             W0, W0
+.text:00000000000B9904 40 68 23 B8                             STR             W0, [X2,X3]
+.text:00000000000B9908 00 7D 20 D4                             BRK             #0x3E8
+.text:00000000000B990C F8 FF FF 17                             B               loc_B98EC
+.text:00000000000B990C                         ; } // starts at B98C0
+.text:00000000000B990C                         ; End of function _exit
