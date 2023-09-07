@@ -50,7 +50,7 @@ struct Block *build_cfg(struct exec_item *f) {
 	//get instructions
 	count = cs_disasm(handle, f->text, f->length, f->base_address, 0, &insn);
 	if (count <= 0) {
-		printf("Error disassembling code\n");
+		DBG_PRINT("Error disassembling code\n");
 		cs_close(&handle);
 		return NULL;
 		}
