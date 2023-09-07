@@ -10,7 +10,7 @@
 #include <capstone/capstone.h>
 #include "../include/global_defines.h"
 
-#define MAX_JT		128
+#define MAX_JT		4096 * 16
 #define MAX_BLOCKS	1024
 #define DOT_BUF_SIZE	8192
 #define NO_ERROR	0
