@@ -81,6 +81,7 @@ struct exec_item {
 	uint64_t	base_address;
 	uint32_t	length;
 	unsigned char 	*text;
+	void		*user_data;
 #ifdef DEMO
 	char 		*disass;
 	char		*name;
@@ -107,6 +108,11 @@ struct block_list {
 	int     blocks_no;
 };
 
+
+bool is_call(struct exec_item *f, cs_insn *insn, int i);
+bool is_jmp(struct exec_item *f, cs_insn *insn, int i);
+void update_jmp_targets(struct exec_item *f, cs_insn *insn, int i, size_t count, uint64_t *jump_targets, size_t *jt_cnt);
+void update_blk_linkage(struct exec_item *f, cs_insn *insn, int i, struct Block *current);
 struct Block *build_cfg(struct exec_item *f);
 void print_plain_cfg(struct Block *root);
 char *cfg2dot(struct Block *root);

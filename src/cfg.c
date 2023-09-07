@@ -43,7 +43,10 @@ struct Block *build_cfg(struct exec_item *f) {
 		}
 
 	// enable options
-	cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
+	if (cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON)!=CS_ERR_OK) {
+		printf("Error setting Capstone options\n");
+		return NULL;
+		}
 
 	DBG_PRINT("Process text (%zu, %p, %d, %08lx, 0, %p)\n", handle, f->text, f->length, f->base_address, &insn);
 
@@ -61,11 +64,7 @@ struct Block *build_cfg(struct exec_item *f) {
 	// collect jump targets
 	for (i = 0; i < count; i++) {
 		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) {
-			cs_x86_op *op = &(insn[i].detail->x86.operands[0]);
-			if (op->type == X86_OP_IMM) {
-				DBG_PRINT("@%d instr adding jump_targets[%zu]=0x%08lx jmp dst\n", i, jt_cnt, op->imm);
-				if (prev_instr(op->imm, insn, count)>f->base_address) jump_targets[jt_cnt++]=prev_instr(op->imm, insn, count);
-				}
+			update_jmp_targets(f, insn, i, count, jump_targets, &jt_cnt);
 			}
 		if (cs_insn_group(handle, &insn[i], CS_GRP_RET)) {
 			DBG_PRINT("@%d instr adding jump_targets[%zu]=0x%08lx ret\n", i, jt_cnt, next_instr(insn[i].address, insn, count));
@@ -105,24 +104,12 @@ struct Block *build_cfg(struct exec_item *f) {
 		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP) || !not_jmp_targets) {
 			DBG_PRINT("Process instruction at 0x%08lx determine if forward or branch needs to be filled\n", insn[i].address);
 			current->end=i<count-1?insn[i+1].address:f->base_address+f->length;
-			cs_x86_op *op = &(insn[i].detail->x86.operands[0]);
-
 			if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) {
-				DBG_PRINT("Block ending at 0x%08lx is because a branch statement op->type=%d\n", insn[i].address, op->type);
-				if (op->type == X86_OP_IMM) {
-					// Direct jump or call
-					DBG_PRINT("Hit Block termination @0x%08lx set branch_addr=0x%08lx\n", insn[i].address, op->imm);
-					if (insn[i].id != X86_INS_CALL) current->branch_addr=op->imm;
-					}
-				if (op->type == X86_OP_MEM) {
-					// Indirect jump or call
-					DBG_PRINT("Hit Block termination @0x%08lx set branch_addr=0x%08lx\n", insn[i].address, 1UL);
-					if (insn[i].id != X86_INS_CALL) current->branch_addr=1;
-					}
+				update_blk_linkage(f, insn, i, current);
 				}
 
 			if (i+1 < count) {
-				if (insn[i].id != X86_INS_JMP) {
+				if (is_jmp(f,insn,i)) {
 					DBG_PRINT("Hit Block termination @0x%08lx set forward_addr=0x%08lx\n", insn[i].address, insn[i+1].address);
 					if (!current->ret) current->forward_addr=insn[i+1].address;
 					}
@@ -233,3 +220,78 @@ char *cfg2dot(struct Block *root){
 	free(visited.blocks);
 	return err==NO_ERROR?dot:ERR_BUFOVF_MSG;
 }
+
+bool is_call(struct exec_item *f, cs_insn *insn, int i){
+	switch (f->bin_type){
+	case BIN_X86_64: return insn[i].id != X86_INS_CALL;
+	case BIN_ARM_64: {
+		return insn[i].id != ARM64_INS_BL;
+		}
+	default: return false;
+	}
+}
+
+bool is_jmp(struct exec_item *f, cs_insn *insn, int i){
+	switch (f->bin_type){
+	case BIN_X86_64: return insn[i].id != X86_INS_JMP;
+	case BIN_ARM_64: {
+//		return insn[i].id != ARM64_INS_B;
+		return strncmp(insn[i].mnemonic,"b",5)!=0;
+		}
+	default: return false;
+	}
+}
+void update_jmp_targets(struct exec_item *f, cs_insn *insn, int i, size_t count, uint64_t *jump_targets, size_t *jt_cnt){
+	switch (f->bin_type){
+	case BIN_X86_64: {
+		cs_x86_op *op = &(insn[i].detail->x86.operands[0]);
+		if (op->type == X86_OP_IMM) {
+			DBG_PRINT("@%d instr adding jump_targets[%zu]=0x%08lx jmp dst\n", i, *jt_cnt, op->imm);
+			if (prev_instr(op->imm, insn, count)>f->base_address) jump_targets[(*jt_cnt)++]=prev_instr(op->imm, insn, count);
+			}
+		}
+	case BIN_ARM_64: {
+		cs_arm64_op *op = &(insn[i].detail->arm64.operands[0]);
+		if (op->type == ARM64_OP_IMM) {
+			DBG_PRINT("Dump instruction @%08lx: mnemonic:'%s', operands:'%s' \n", insn[i].address, insn[i].mnemonic, insn[i].op_str);
+			DBG_PRINT("@%d instr adding jump_targets[%zu]=0x%08lx jmp dst\n", i, *jt_cnt, op->imm);
+			if (prev_instr(op->imm, insn, count)>f->base_address) jump_targets[(*jt_cnt)++]=prev_instr(op->imm, insn, count);
+			}
+		}
+	default: {}
+	}
+}
+void update_blk_linkage(struct exec_item *f, cs_insn *insn, int i, struct Block *current){
+	switch (f->bin_type){
+	case BIN_X86_64: {
+		cs_x86_op *op = &(insn[i].detail->x86.operands[0]);
+		DBG_PRINT("Block ending at 0x%08lx is because a branch statement op->type=%d\n", insn[i].address, op->type);
+			if (op->type == X86_OP_IMM) {
+				// Direct jump or call
+				DBG_PRINT("Hit Block termination @0x%08lx set branch_addr=0x%08lx\n", insn[i].address, op->imm);
+				if (is_call(f,insn,i)) current->branch_addr=op->imm;
+				}
+			if (op->type == X86_OP_MEM) {
+				// Indirect jump or call
+				DBG_PRINT("Hit Block termination @0x%08lx set branch_addr=0x%08lx\n", insn[i].address, 1UL);
+				if (is_call(f,insn,i)) current->branch_addr=1;
+				}
+		}
+	case BIN_ARM_64: {
+		cs_arm64_op *op = &(insn[i].detail->arm64.operands[0]);
+		DBG_PRINT("Block ending at 0x%08lx is because a branch statement op->type=%d\n", insn[i].address, op->type);
+			if (op->type == ARM64_OP_IMM) {
+				// Direct jump or call
+				DBG_PRINT("Hit Block termination @0x%08lx set branch_addr=0x%08lx\n", insn[i].address, op->imm);
+				if (is_call(f,insn,i)) current->branch_addr=op->imm;
+				}
+			if (op->type == ARM64_OP_MEM) {
+				// Indirect jump or call
+				DBG_PRINT("Hit Block termination @0x%08lx set branch_addr=0x%08lx\n", insn[i].address, 1UL);
+				if (is_call(f,insn,i)) current->branch_addr=1;
+				}
+		}
+	default: {}
+	}
+}
+
