@@ -69,6 +69,7 @@ static int do_sysno(void* user, const char* cmd) {
 			v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
 			p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
 			sys_res=init_res();
+			patch_calls(&f);
 			root=build_cfg(&f);
 			if (root == NULL) {
 				eprintf(BRED "[*]" RED " Function disassembly failed!!!\n" CRESET);

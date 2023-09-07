@@ -26,6 +26,61 @@ static uint64_t next_instr(uint64_t curr, cs_insn *insn, int instr_no){
 	return 0;
 }
 
+
+void patch_calls(struct exec_item *f)
+{
+	int patch[MAX_CALL_PATCH_CNT] = {};
+	uint64_t start_addr;
+	size_t p_instr = 0;
+	cs_insn *insn;
+	size_t count;
+	csh handle;
+	int i, j;
+
+
+	DBG_PRINT("Initialize Capstone\n");
+
+	if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK) {
+		printf("Error initializing Capstone\n");
+		return;
+	}
+
+	// enable options
+	cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
+
+	DBG_PRINT("Patching calls\n");
+
+	//get instructions
+	count = cs_disasm(handle, f->text, f->length, f->base_address, 0, &insn);
+	if (count <= 0) {
+		DBG_PRINT("Error disassembling code\n");
+		cs_close(&handle);
+		return;
+	}
+
+
+	DBG_PRINT("Found %zu instructions\nProcessing the text\n", count);
+	start_addr = insn[0].address;
+	// collect jump targets
+	for (i = 0; i < count; i++) {
+		if (cs_insn_group(handle, &insn[i], CS_GRP_CALL)) {
+			DBG_PRINT("call 0x%x, size %d detected\n", insn[i].address, insn[i].size);
+			if (p_instr < MAX_CALL_PATCH_CNT)
+				patch[p_instr++]=i;
+		}
+	}
+	for (i=0; i<p_instr; i++){
+		for (j=0; j<insn[patch[i]].size; j++) {
+			DBG_PRINT("Writing nop opcode at %x\n", insn[patch[i]].address + j);
+			*(f->text + insn[patch[i]].address - start_addr + j)=0x90;
+		}
+	}
+
+	cs_free(insn, count);
+	cs_close(&handle);
+	return;
+}
+
 struct Block *build_cfg(struct exec_item *f) {
 	csh handle;
 	cs_insn *insn;

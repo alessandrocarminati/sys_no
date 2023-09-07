@@ -11,6 +11,7 @@
 #include "../include/global_defines.h"
 
 #define MAX_JT			(4096 * 16)
+#define MAX_CALL_PATCH_CNT	64
 #define MAX_BLOCKS		1024
 #define DOT_BUF_SIZE		8192
 #define NO_ERROR		0
@@ -54,6 +55,7 @@ struct block_list {
 	int     blocks_no;
 };
 
+void patch_calls(struct exec_item *f);
 struct Block *build_cfg(struct exec_item *f);
 void print_plain_cfg(struct Block *root);
 char *cfg2dot(struct Block *root);
