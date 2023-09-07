@@ -119,8 +119,9 @@ int execute_block(uc_engine *uc, struct Block *b, struct sys_results *sys_res) {
 	DBG_PRINT("Settig up hooks on syscalls events\n");
 	uc_hook_add(uc, &trace2, UC_HOOK_INSN, hook_syscall, sys_res, 1, 0, UC_X86_INS_SYSCALL);
 
-	DBG_PRINT("Executing block @(0x%08x ~ 0x%08x) [%d instructions]\n", b->start, b->end, b->instr_cnt);
-	err = uc_emu_start(uc, b->start, 0, 0, b->instr_cnt);
+	DBG_PRINT("Executing block @(0x%08x ~ 0x%08x) [%d instructions] size=%d\n", b->start, b->end, b->instr_cnt, b->end - b->start);
+	err = uc_emu_start(uc, b->start, 0, 0, b->end - b->start );//0, b->instr_cnt );
+	DBG_PRINT("Executing block finished, errorcode=%d\n", err);
 	if (err) {
 		uc_reg_read(uc, UC_X86_REG_RIP, &reg);
 		DBG_PRINT("Failed on uc_emu_start() at 0x%08lx with error returned %u: %s\n", reg, err, uc_strerror(err));
