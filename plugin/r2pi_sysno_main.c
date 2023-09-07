@@ -54,7 +54,7 @@ static int do_sysno(void* user, const char* cmd) {
 		ut64 fcnlsize = r_anal_function_linear_size(func);
 //		ut64 fcnrsize = r_anal_function_realsize(func);
 //		eprintf ("%s: [0x%08lx] lsize=%ld rsize=%ld name=%s %s argc=%d\n", PLUGIN_NAME, core->offset, fcnlsize, fcnrsize, func->name, cmd, n);
-		struct exec_item f;
+		struct exec_item f = {};
 		f.base_address=core->offset;
 		f.length=fcnlsize;
 		f.text=malloc(f.length);
@@ -64,24 +64,29 @@ static int do_sysno(void* user, const char* cmd) {
 			struct Block *root;
 			int tmp=0;
 			struct sys_results *sys_res;
-			char *buf;
+			char *buf = NULL;
 
 			v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
 			p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
 			sys_res=init_res();
 			root=build_cfg(&f);
-			eprintf(BGRN "[*]" GRN " Generating cfg for the given function\n" CRESET);
-			while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
-				if (execute_block_seq(&f, &p, sys_res)) {
-					eprintf(BRED "[*]" RED " Premature termination!!!\n" CRESET);
-					break;
+			if (root == NULL) {
+				eprintf(BRED "[*]" RED " Function disassembly failed!!!\n" CRESET);
+			}
+			else {
+				eprintf(BGRN "[*]" GRN " Generating cfg for the given function\n" CRESET);
+				while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
+					if (execute_block_seq(&f, &p, sys_res)) {
+						eprintf(BRED "[*]" RED " Premature termination!!!\n" CRESET);
+						break;
 					}
 				}
-			buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}\n");
-			eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
-			eprintf(YEL "%s\n", buf);
-			dispose_res(sys_res, buf);
+				buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}");
+				eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
+				eprintf("%s\n", buf);
 			}
+			dispose_res(sys_res, buf);
+		}
 		eprintf("\n");
 		free(f.text);
 		return true;

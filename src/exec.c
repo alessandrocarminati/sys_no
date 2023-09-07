@@ -205,6 +205,10 @@ char *print_res(struct sys_results *sys_res, const char *fmt){
 	return buf;
 }
 void dispose_res(struct sys_results *sys_res, char *buf){
-	free(sys_res);
-	free(buf);
+	if (sys_res != NULL) {
+		free(sys_res);
+	}
+	if (buf != NULL) {
+		free(buf);
+	}
 }
