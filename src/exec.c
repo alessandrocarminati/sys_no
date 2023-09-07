@@ -5,6 +5,25 @@
 #include "../include/helper.h"
 #include "../include/global_defines.h"
 
+void (*dump_cpu[])(uc_engine *uc) = {
+	NULL, 			// 0x00 - invalid
+	NULL, 			// 0x01 - BIN_X86_32
+	NULL, 			// 0x02 - BIN_PPC_32
+	NULL, 			// 0x03 - BIN_MIPS_32
+	NULL, 			// 0x04 - BIN_ARM_32
+	NULL, 			// 0x05 - Not allocated
+	NULL, 			// 0x06 - Not allocated
+	NULL, 			// 0x07 - Not allocated
+	NULL, 			// 0x08 - Not allocated
+	&dump_registers_x86_64,	// 0x09 - BIN_X86_64
+	NULL,			// 0x0a - BIN_PPC_64
+	NULL,			// 0x0b - BIN_MIPS_64
+	dump_registers_aarch64,	// 0x0c - BIN_ARM_64
+	NULL,			// 0x0d - Not allocated
+	NULL,			// 0x0e - Not allocated
+	NULL, 			// 0x0f - Not allocated
+};
+
 static bool x86_invert_jump(uint8_t *insn) {
 	uint16_t x86_j_near[]=
 	{0x800F, 0x810F, 0x880F, 0x890F, 0x840F, 0x850F, 0x820F, 0x830F, 0x860F, 0x870F, 0x8C0F, 0x8D0F, 0x8E0F, 0x8F0F, 0x8A0F, 0x8B0F};
@@ -71,41 +90,41 @@ static void hook_syscall(uc_engine *uc, void *user_data) {
 	print_trace();
 }
 
-void dump_registers(uc_engine *uc){
+void dump_registers_x86_64(uc_engine *uc){
 	uint64_t reg;
 
-        uc_reg_read(uc, UC_X86_REG_RAX, &reg);
-        printf(">>> RAX = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_RBX, &reg);
-        printf(">>> RBX = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_RCX, &reg);
-        printf(">>> RCX = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_RDX, &reg);
-        printf(">>> RDX = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_RSI, &reg);
-        printf(">>> RSI = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_RDI, &reg);
-        printf(">>> RDI = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_R8, &reg);
-        printf(">>> R8 = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_R9, &reg);
-        printf(">>> R9 = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_R10, &reg);
-        printf(">>> R10 = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_R11, &reg);
-        printf(">>> R11 = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_R12, &reg);
-        printf(">>> R12 = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_R13, &reg);
-        printf(">>> R13 = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_R14, &reg);
-        printf(">>> R14 = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_R15, &reg);
-        printf(">>> R15 = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_RSP, &reg);
-        printf(">>> RSP = 0x%lx\n", reg);
-        uc_reg_read(uc, UC_X86_REG_RIP, &reg);
-        printf(">>> RIP = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RAX, &reg);
+	printf(">>> RAX = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RBX, &reg);
+	printf(">>> RBX = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RCX, &reg);
+	printf(">>> RCX = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RDX, &reg);
+	printf(">>> RDX = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RSI, &reg);
+	printf(">>> RSI = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RDI, &reg);
+	printf(">>> RDI = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R8, &reg);
+	printf(">>> R8 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R9, &reg);
+	printf(">>> R9 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R10, &reg);
+	printf(">>> R10 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R11, &reg);
+	printf(">>> R11 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R12, &reg);
+	printf(">>> R12 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R13, &reg);
+	printf(">>> R13 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R14, &reg);
+	printf(">>> R14 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_R15, &reg);
+	printf(">>> R15 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RSP, &reg);
+	printf(">>> RSP = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_X86_REG_RIP, &reg);
+	printf(">>> RIP = 0x%lx\n", reg);
 
 }
 int execute_block(uc_engine *uc, struct exec_item *f, struct Block *b, struct sys_results *sys_res) {
@@ -212,4 +231,77 @@ char *print_res(struct sys_results *sys_res, const char *fmt){
 void dispose_res(struct sys_results *sys_res, char *buf){
 	free(sys_res);
 	free(buf);
+}
+void dump_registers(uc_engine *uc, struct exec_item *f){
+	dump_cpu[f->bin_type](uc);
+}
+void dump_registers_aarch64(uc_engine *uc){
+	uint64_t reg;
+
+	uc_reg_read(uc, UC_ARM64_REG_X0, &reg);
+	printf(">>> X00 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X1, &reg);
+	printf(">>> X01 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X2, &reg);
+	printf(">>> X02 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X3, &reg);
+	printf(">>> X03 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X4, &reg);
+	printf(">>> X04 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X5, &reg);
+	printf(">>> X05 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X6, &reg);
+	printf(">>> X06 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X7, &reg);
+	printf(">>> X07 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X8, &reg);
+	printf(">>> X08 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X9, &reg);
+	printf(">>> X09 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X10, &reg);
+	printf(">>> X10 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X11, &reg);
+	printf(">>> X11 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X12, &reg);
+	printf(">>> X12 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X13, &reg);
+	printf(">>> X13 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X14, &reg);
+	printf(">>> X14 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X15, &reg);
+	printf(">>> X15 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X16, &reg);
+	printf(">>> X16 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X17, &reg);
+	printf(">>> X17 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X18, &reg);
+	printf(">>> X18 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X19, &reg);
+	printf(">>> X19 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X20, &reg);
+	printf(">>> X20 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X21, &reg);
+	printf(">>> X21 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X22, &reg);
+	printf(">>> X22 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X23, &reg);
+	printf(">>> X23 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X24, &reg);
+	printf(">>> X24 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X25, &reg);
+	printf(">>> X25 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X26, &reg);
+	printf(">>> X26 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X27, &reg);
+	printf(">>> X27 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X28, &reg);
+	printf(">>> X28 = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X29, &reg);
+	printf(">>> X29(FP) = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_X30, &reg);
+	printf(">>> X30(LR) = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_SP, &reg);
+	printf(">>> SP = 0x%lx\n", reg);
+	uc_reg_read(uc, UC_ARM64_REG_PC, &reg);
+	printf(">>> PC = 0x%lx\n", reg);
 }
