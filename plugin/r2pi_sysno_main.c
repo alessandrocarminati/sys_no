@@ -71,6 +71,7 @@ static int do_sysno(void* user, const char* cmd) {
 			sys_res=init_res();
 			patch_calls(&f);
 			root=build_cfg(&f);
+			printf("%s", cfg2dot(root));
 			if (root == NULL) {
 				eprintf(BRED "[*]" RED " Function disassembly failed!!!\n" CRESET);
 			}
