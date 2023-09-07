@@ -35,7 +35,7 @@ struct Block *build_cfg(struct exec_item *f) {
 	bool found, not_jmp_targets;
 	uint64_t jump_targets[MAX_JT];
 
-	DBG_PRINT("Initialize Capstone\n");
+	DBG_PRINT("Initialize Capstone (%d,%d)\n", BT2CSARCH(f->bin_type), BT2CSMODE(f->bin_type));
 
 	 if (cs_open(BT2CSARCH(f->bin_type), BT2CSMODE(f->bin_type), &handle) != CS_ERR_OK) {
 		printf("Error initializing Capstone\n");
@@ -45,12 +45,12 @@ struct Block *build_cfg(struct exec_item *f) {
 	// enable options
 	cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 
-	DBG_PRINT("Process text\n");
+	DBG_PRINT("Process text (%zu, %p, %d, %08lx, 0, %p)\n", handle, f->text, f->length, f->base_address, &insn);
 
 	//get instructions
 	count = cs_disasm(handle, f->text, f->length, f->base_address, 0, &insn);
 	if (count <= 0) {
-		printf("Error disassembling code\n");
+		printf("Error disassembling code -(%d)-\n", cs_errno(handle));
 		cs_close(&handle);
 		return NULL;
 		}
@@ -88,6 +88,7 @@ struct Block *build_cfg(struct exec_item *f) {
 	current->forward_addr=0;
 
 	// iterate all instructions
+	DBG_PRINT("Preliminary scan started\n");
 	for (i = 0; i < count; i++) {
 		current->instr_cnt++;
 		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) DBG_PRINT("0x%"PRIx64":\t%s\t\t%s\n", insn[i].address, insn[i].mnemonic, insn[i].op_str);
@@ -143,6 +144,7 @@ struct Block *build_cfg(struct exec_item *f) {
 		}
 	cs_free(insn, count);
 	cs_close(&handle);
+	DBG_PRINT("Preliminar scan ended\n");
 
 	DL_FOREACH(first,current) {
 		found=false;
