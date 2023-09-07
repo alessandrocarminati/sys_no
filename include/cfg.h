@@ -37,6 +37,8 @@
 #define BIN_ARCH_MSK	0x07
 #define BIN_BITS_MSK	0x08
 
+#define BT_OK		1
+#define BT_KO		0
 
 #define BT2CSARCH(bintype) \
 	( (bintype == BIN_X86_32) ? CS_ARCH_X86 : \
@@ -59,6 +61,13 @@
 	  (bintype == BIN_ARM_64) ? CS_MODE_V8 : \
 	  BIN_UNKNOWN )
 
+#define BT_SUPPORTED(bintype) (\
+	(bintype == BIN_X86_64) ? BT_OK : \
+	BT_KO )
+
+#define R2TOBT(arch,bits,os) (\
+	(strncmp(arch, "x86", 3)==0) && (bits=64) && (strncmp(os, "linux", 5)==0) ? BIN_X86_64 : \
+	BIN_UNKNOWN )
 
 #ifdef DEBUG
 #define DBG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( 0 )

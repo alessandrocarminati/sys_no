@@ -1,5 +1,6 @@
 #include <r_core.h>
 #include <r_anal.h>
+#include <r_bin.h>
 #include <string.h>
 #include "../include/cfg.h"
 #include "../include/paths.h"
@@ -42,15 +43,20 @@ static int do_sysno(void* user, const char* cmd) {
 	if (strncmp("sysno", cmd, 5)==0) {
 		n=PROC_CMD_PARSE(cmd, args);
 		if ((n<1)|| (n>2)) {
-			eprintf (BRED "[*]" RED "%s: syntax error!\n" CRESET, PLUGIN_NAME);
+			eprintf (BRED "[*]" RED " %s: syntax error!\n" CRESET, PLUGIN_NAME);
 			return true;
 			}
 		RCore *core = (RCore *) user;
 		RAnalFunction *func = r_anal_get_fcn_in(core->anal, core->offset, R_ANAL_FCN_TYPE_NULL);
 		if (!func) {
-			eprintf (BRED "[*]" RED "no anal data, please run analysis before calling this\n" CRESET);
+			eprintf (BRED "[*]" RED " no anal data, please run analysis before calling this\n" CRESET);
 			return true;
 			}
+		if (R2TOBT(core->bin->cur->o->info->arch, core->bin->cur->o->info->bits, core->bin->cur->o->info->os)== BIN_UNKNOWN) {
+			eprintf (BRED "[i]" RED " Arch:%s (%dbits) binary for %s os not supported\n" CRESET, core->bin->cur->o->info->arch, core->bin->cur->o->info->bits, core->bin->cur->o->info->os);
+			return true;
+			}
+
 		ut64 fcnlsize = r_anal_function_linear_size(func);
 //		ut64 fcnrsize = r_anal_function_realsize(func);
 //		eprintf ("%s: [0x%08lx] lsize=%ld rsize=%ld name=%s %s argc=%d\n", PLUGIN_NAME, core->offset, fcnlsize, fcnrsize, func->name, cmd, n);
