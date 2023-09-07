@@ -37,7 +37,7 @@ struct Block *build_cfg(struct exec_item *f) {
 
 	DBG_PRINT("Initialize Capstone\n");
 
-	 if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK) {
+	 if (cs_open(BT2CSARCH(f->bin_type), BT2CSMODE(f->bin_type), &handle) != CS_ERR_OK) {
 		printf("Error initializing Capstone\n");
 		return NULL;
 		}

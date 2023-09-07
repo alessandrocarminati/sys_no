@@ -225,11 +225,11 @@ unsigned char function6[] = { // _exit
 	'\xF7','\xD8','\x64','\x41','\x89','\x01','\xEB','\xD6','\x0F','\x1F','\x84','\x00','\x00','\x00','\x00','\x00',
 };
 
-struct exec_item	f1= { .disass="__pthread_mutex_lock_full.txt",		.name="__pthread_mutex_lock_full",		.base_address=0x000a2380, .length=sizeof(function1), .text=function1 };
-struct exec_item	f2= { .disass="__malloc_fork_lock_parent.txt",		.name="__malloc_fork_lock_parent",		.base_address=0x00099F00, .length=sizeof(function2), .text=function2 };
-struct exec_item	f3= { .disass="__malloc_fork_lock_parent_no_ret.txt",	.name="__malloc_fork_lock_parent (no ret)",	.base_address=0x00099F00, .length=sizeof(function3), .text=function3 };
-struct exec_item	f4= { .disass="getentropy.txt", 			.name="getentropy",				.base_address=0x000482B0, .length=sizeof(function4), .text=function4 };
-struct exec_item	f5= { .disass="sub_8CE70.txt", 				.name="sub_8CFD0",				.base_address=0x0008CFD0, .length=sizeof(function5), .text=function5 };
-struct exec_item	f6= { .disass="_exit.txt.ansi",				.name="_exit",					.base_address=0x000E3110, .length=sizeof(function6), .text=function6 };
+struct exec_item	f1= { .bin_type=BIN_X86_64,	.disass="__pthread_mutex_lock_full.txt",		.name="__pthread_mutex_lock_full",		.base_address=0x000a2380, .length=sizeof(function1), .text=function1 };
+struct exec_item	f2= { .bin_type=BIN_X86_64,	.disass="__malloc_fork_lock_parent.txt",		.name="__malloc_fork_lock_parent",		.base_address=0x00099F00, .length=sizeof(function2), .text=function2 };
+struct exec_item	f3= { .bin_type=BIN_X86_64,	.disass="__malloc_fork_lock_parent_no_ret.txt",		.name="__malloc_fork_lock_parent (no ret)",	.base_address=0x00099F00, .length=sizeof(function3), .text=function3 };
+struct exec_item	f4= { .bin_type=BIN_X86_64,	.disass="getentropy.txt", 				.name="getentropy",				.base_address=0x000482B0, .length=sizeof(function4), .text=function4 };
+struct exec_item	f5= { .bin_type=BIN_X86_64,	.disass="sub_8CE70.txt", 				.name="sub_8CFD0",				.base_address=0x0008CFD0, .length=sizeof(function5), .text=function5 };
+struct exec_item	f6= { .bin_type=BIN_X86_64,	.disass="_exit.txt.ansi",				.name="_exit",					.base_address=0x000E3110, .length=sizeof(function6), .text=function6 };
 
 struct exec_item *f[]={NULL, &f1, &f2, &f3, &f4, &f5, &f6};

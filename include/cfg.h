@@ -17,6 +17,49 @@
 #define ERR_BUFOVF	1
 #define ERR_BUFOVF_MSG	"Dot buffer too small"
 
+#define BIN_X86_32	0x01
+#define BIN_PPC_32	0x02
+#define BIN_MIPS_32	0x03
+#define BIN_ARM_32	0x04
+#define BIN_X86_64	0x09
+#define BIN_PPC_64	0x0a
+#define BIN_MIPS_64	0x0b
+#define BIN_ARM_64	0x0c
+
+#define BIN_UNKNOWN	0xffffffffU
+#define BIN_X86		0x01
+#define BIN_PPC		0x02
+#define BIN_MIPS	0x03
+#define BIN_ARM		0x04
+
+#define BIN_32		0x00
+#define BIN_64		0x08
+#define BIN_ARCH_MSK	0x07
+#define BIN_BITS_MSK	0x08
+
+
+#define BT2CSARCH(bintype) \
+	( (bintype == BIN_X86_32) ? CS_ARCH_X86 : \
+	  (bintype == BIN_PPC_32) ? CS_ARCH_PPC : \
+	  (bintype == BIN_MIPS_32) ? CS_ARCH_MIPS : \
+	  (bintype == BIN_ARM_32) ? CS_ARCH_ARM : \
+	  (bintype == BIN_X86_64) ? CS_ARCH_X86 : \
+	  (bintype == BIN_PPC_64) ? CS_ARCH_PPC : \
+	  (bintype == BIN_MIPS_64) ? CS_ARCH_MIPS : \
+	  (bintype == BIN_ARM_64) ? CS_ARCH_ARM64 : \
+	  BIN_UNKNOWN )
+#define BT2CSMODE(bintype) \
+	( (bintype == BIN_X86_32) ? CS_MODE_32 : \
+	  (bintype == BIN_PPC_32) ? CS_MODE_32 : \
+	  (bintype == BIN_MIPS_32) ? CS_MODE_32 : \
+	  (bintype == BIN_ARM_32) ? CS_MODE_ARM : \
+	  (bintype == BIN_X86_64) ? CS_MODE_64 : \
+	  (bintype == BIN_PPC_64) ? CS_MODE_64 : \
+	  (bintype == BIN_MIPS_64) ? CS_MODE_64 : \
+	  (bintype == BIN_ARM_64) ? CS_MODE_V8 : \
+	  BIN_UNKNOWN )
+
+
 #ifdef DEBUG
 #define DBG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( 0 )
 #else
@@ -25,6 +68,7 @@
 
 
 struct exec_item {
+	uint32_t	bin_type;
 	uint64_t	base_address;
 	uint32_t	length;
 	unsigned char 	*text;
