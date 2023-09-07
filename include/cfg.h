@@ -10,12 +10,12 @@
 #include <capstone/capstone.h>
 #include "../include/global_defines.h"
 
-#define MAX_JT		4096 * 16
-#define MAX_BLOCKS	1024
-#define DOT_BUF_SIZE	8192
-#define NO_ERROR	0
-#define ERR_BUFOVF	1
-#define ERR_BUFOVF_MSG	"Dot buffer too small"
+#define MAX_JT			(4096 * 16)
+#define MAX_BLOCKS		1024
+#define DOT_BUF_SIZE		8192
+#define NO_ERROR		0
+#define ERR_BUFOVF		1
+#define ERR_BUFOVF_MSG		"Dot buffer too small"
 
 #ifdef DEBUG
 #define DBG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( 0 )
