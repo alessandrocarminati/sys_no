@@ -28,26 +28,29 @@ static bool x86_invert_jump(uint8_t *insn) {
 }
 
 static bool hook_mem_invalid(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
+	struct exec_item *f=(struct exec_item *)user_data;
+
 	switch (type) {
 	default:
 		DBG_PRINT(">>> Missing memory is being READ at 0x%08lx data size = %u\n", address, size);
-		DBG_PRINT(">>> allocate 64k at 0x%08lx\n", address & 0xffffffffffff0000);
-		uc_mem_map(uc, address & 0xffffffffffff0000, 64 * 1024, UC_PROT_ALL);
+		DBG_PRINT(">>> allocate 64k at 0x%08lx\n", address & ALIGN64K(f->bin_type));
+		uc_mem_map(uc, address & ALIGN64K(f->bin_type), 64 * 1024, UC_PROT_ALL);
 		return true;
 	case UC_MEM_WRITE_UNMAPPED:
 		DBG_PRINT(">>> Missing memory is being WRITE at 0x%08lx data size = %u, data value = 0x%08lx\n", address, size, value);
-		DBG_PRINT(">>> allocate 64k at 0x%08lx\n", address & 0xffffffffffff0000);
-		uc_mem_map(uc, address & 0xffffffffffff0000, 64 * 1024, UC_PROT_ALL);
+		DBG_PRINT(">>> allocate 64k at 0x%08lx\n", address & ALIGN64K(f->bin_type));
+		uc_mem_map(uc, address & ALIGN64K(f->bin_type), 64 * 1024, UC_PROT_ALL);
 		return true;
 	}
 }
 
 static bool hook_instruction(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
-	uint64_t pc;
+	uint64_t addr;
 	int i;
 
-	uc_reg_read(uc, UC_X86_REG_RIP, &pc);
-	DBG_PRINT("executed 0x%08lx\n", pc);
+	struct exec_item *f=(struct exec_item *)user_data;
+	uc_reg_read(uc, ARCH_PC_REG(f->bin_type), &addr);
+	DBG_PRINT("executed 0x%08lx\n", addr);
 	return true;
 }
 
@@ -58,12 +61,13 @@ static void hook_mem_fetch_check(uc_engine *uc, uc_mem_type type, uint64_t addre
 }
 
 static void hook_syscall(uc_engine *uc, void *user_data) {
-	uint64_t rax, rip;
+	uint64_t num, addr;
+	struct exec_item *f=(struct exec_item *)user_data;
 
-	uc_reg_read(uc, UC_X86_REG_RAX, &rax);
-	uc_reg_read(uc, UC_X86_REG_RIP, &rip);
-	ins_res((struct sys_results *)user_data, rip,rax);
-	DBG_PRINT("############### Syscall [0x%08lx] @0x%08lx ###############\n", rax, rip);
+	uc_reg_read(uc, ARCH_SYSNO_REG(f->bin_type), &num);
+	uc_reg_read(uc, ARCH_PC_REG(f->bin_type), &addr);
+	ins_res((struct sys_results *)f->user_data, addr, num);
+	DBG_PRINT("############### Syscall [0x%08lx] @0x%08lx ###############\n", num, addr);
 	print_trace();
 }
 
@@ -104,7 +108,7 @@ void dump_registers(uc_engine *uc){
         printf(">>> RIP = 0x%lx\n", reg);
 
 }
-int execute_block(uc_engine *uc, struct Block *b, struct sys_results *sys_res) {
+int execute_block(uc_engine *uc, struct exec_item *f, struct Block *b, struct sys_results *sys_res) {
 	uc_err err;
 	uc_hook trace1, trace2, trace3;
 	uint64_t reg;
@@ -112,52 +116,53 @@ int execute_block(uc_engine *uc, struct Block *b, struct sys_results *sys_res) {
 	int i;
 
 	if (!uc) return ERR_NO_VALID_CONTEXT;
+	f->user_data=(void *)sys_res;
 
 	DBG_PRINT("Settig up hooks on memory unmapped events\n");
-	uc_hook_add(uc, &trace1, UC_HOOK_MEM_READ_UNMAPPED | UC_HOOK_MEM_WRITE_UNMAPPED, hook_mem_invalid, NULL, 1, 0);
+	uc_hook_add(uc, &trace1, UC_HOOK_MEM_READ_UNMAPPED | UC_HOOK_MEM_WRITE_UNMAPPED, hook_mem_invalid, f, 1, 0);
 
 	DBG_PRINT("Settig up hooks on syscalls events\n");
-	uc_hook_add(uc, &trace2, UC_HOOK_INSN, hook_syscall, sys_res, 1, 0, UC_X86_INS_SYSCALL);
+	uc_hook_add(uc, &trace2, UC_HOOK_INSN, hook_syscall, f, 1, 0, UC_X86_INS_SYSCALL);
 
 	DBG_PRINT("Executing block @(0x%08x ~ 0x%08x) [%d instructions]\n", b->start, b->end, b->instr_cnt);
 	err = uc_emu_start(uc, b->start, 0, 0, b->instr_cnt);
 	if (err) {
 		uc_reg_read(uc, UC_X86_REG_RIP, &reg);
 		DBG_PRINT("Failed on uc_emu_start() at 0x%08lx with error returned %u: %s\n", reg, err, uc_strerror(err));
-		dump_registers(uc);
+		if (dump_cpu[f->bin_type]) dump_cpu[f->bin_type](uc);
 		return ERR_EMULATION_START_FAILED;
 		}
 	return b->syscall?SYSCALL:SUCCESS;
 }
 
-int emu_init(unsigned char *code, uint64_t base_address, int size, uc_engine **ret) {
+int emu_init(struct exec_item *f, uc_engine **ret) {
 	int err;
 	uint64_t reg;
 	uc_engine *uc;
 
-	DBG_PRINT("initialyzing Unicorn engine\n");
-	err = uc_open(UC_ARCH_X86, UC_MODE_64, &uc);
+	DBG_PRINT("initialyzing Unicorn engine (%d, %d)\n", BT2UCARCH(f->bin_type), BT2UCMODE(f->bin_type));
+	err = uc_open(BT2UCARCH(f->bin_type), BT2UCMODE(f->bin_type), &uc);
 	if (err) {
 		DBG_PRINT("Failed on uc_open() with error returned: %u\n", err);
 		return ERR_CANT_OPEN_UNICORN;
 		}
-	DBG_PRINT("Allocating memory for text application\n");
+	DBG_PRINT("Allocating memory for text application (%p, 0x%08lx & 0x%08lx, %d, %d)\n", uc, f->base_address, ALIGN64K(f->bin_type), 1024*1024*2, UC_PROT_ALL);
 	// allocate 4kb aligned memory
-	if ((err=uc_mem_map(uc, base_address & 0xffffffffffff0000, 1024*1024*2, UC_PROT_ALL))){
+	if ((err=uc_mem_map(uc, f->base_address & ALIGN64K(f->bin_type), 1024*1024*2, UC_PROT_ALL))){
 		DBG_PRINT("Failed to allocate emulation memory, quit! (%u)\n", err);
 		return ERR_CANT_ALLOCATE_TEXT;
 		}
 
-	DBG_PRINT("Allocating stack memory\n");
+	DBG_PRINT("Allocating stack memory (%p, %d, %p)\n", uc, ARCH_SP_REG(f->bin_type), &reg);
 	reg=STACK_TOP;
-	uc_reg_write(uc, UC_X86_REG_RSP, &reg);
-	if ((err=uc_mem_map(uc, STACK_TOP & 0xffffffffffff0000, 1024*64, UC_PROT_ALL))){
+	uc_reg_write(uc, ARCH_SP_REG(f->bin_type), &reg);
+	if ((err=uc_mem_map(uc, STACK_TOP & ALIGN64K(f->bin_type), 1024*64, UC_PROT_ALL))){
 		DBG_PRINT("Failed to allocate stack memory, quit! (%u)\n", err);
 		return ERR_CANT_ALLOCATE_TEXT;
 		}
 
-	DBG_PRINT("Writing text into memory @0x%08lx\n", base_address);
-	if ((err=uc_mem_write(uc, base_address, code, size))) {
+	DBG_PRINT("Writing text into memory @0x%08lx\n", f->base_address);
+	if ((err=uc_mem_write(uc, f->base_address, f->text, f->length))) {
 		DBG_PRINT("Failed to write emulation code to memory, quit! (%u)\n", err);
 		uc_close(uc);
 		return ERR_CANT_WRITE_TEXT;
