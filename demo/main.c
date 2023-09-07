@@ -13,7 +13,7 @@ int execute_block_seq(struct exec_item *f, struct block_list *b, struct sys_resu
 	uc_engine *uc;
 	int i, err;
 
-	err=emu_init(f->text, f->base_address, f->length, &uc);
+	err=emu_init(f, &uc);
 	if (err) {
 		printf("init failed\n");
 		return 1;
@@ -22,14 +22,14 @@ int execute_block_seq(struct exec_item *f, struct block_list *b, struct sys_resu
 	for (i=0; i<b->blocks_no; i++) {
 		DBG_PRINT(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution #%02d start <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", i);
 		DBG_PRINT("Execute block #%d, start=0x%08x, end=0x%08x\n",i, b->blocks_addr[i]->start, b->blocks_addr[i]->end);
-		err=execute_block(uc, b->blocks_addr[i], sys_res);
+		err=execute_block(uc, f, b->blocks_addr[i], sys_res);
 		DBG_PRINT("Execution error flag=%d\n",err);
 		if ((err!=SUCCESS)&&(err!=SYSCALL)) {
 			printf("exit!\n");
 			return 1;
 			}
 #ifdef DEBUG
-		dump_registers(uc);
+		dump_registers(uc,f);
 #endif
 		DBG_PRINT(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Execution #%02d end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", i);
 		}
@@ -71,12 +71,16 @@ int main(int argc, char *argv[]){
 
 	sys_res=init_res();
 	root=build_cfg(f[index]);
+	if (!root) {
+		printf(BRED "[*]" RED " Can't compute cfg!!!\n" reset);
+		return 1;
+		}
 	print_plain_cfg(root);
 	printf(BGRN "[*]" GRN " Generating cfg for the given function\n" reset);
 	printf("%s", cfg2dot(root));
 	printf(BGRN "[*]" GRN " Generating paths from entry point to the syscalls\n" reset);
 	while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
-		DBG_PRINT(BRED "[*]" RED " Path found!\n");
+		DBG_PRINT(BGRN "[*]" GRN " Path found!\n");
 		for (i=0; i<p.blocks_no; i++) {
 			printf("0x%08x, ", p.blocks_addr[i]->start);
 			}
