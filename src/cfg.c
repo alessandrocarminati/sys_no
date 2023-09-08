@@ -64,13 +64,9 @@ void print_hex_text(struct exec_item *f)
 
 void patch_calls(struct exec_item *f)
 {
-	int patch[MAX_CALL_PATCH_CNT] = {};
-	uint64_t start_addr;
-	size_t p_instr = 0;
+	size_t count, i;
 	cs_insn *insn;
-	size_t count;
 	csh handle;
-	int i, j;
 
 
 	DBG_PRINT("Initialize Capstone\n");
@@ -95,19 +91,10 @@ void patch_calls(struct exec_item *f)
 
 
 	DBG_PRINT("Found %zu instructions\nProcessing the text\n", count);
-	start_addr = insn[0].address;
-	// collect jump targets
 	for (i = 0; i < count; i++) {
 		if (cs_insn_group(handle, &insn[i], CS_GRP_CALL)) {
-			DBG_PRINT("call 0x%x, size %d detected\n", insn[i].address, insn[i].size);
-			if (p_instr < MAX_CALL_PATCH_CNT)
-				patch[p_instr++]=i;
-		}
-	}
-	for (i=0; i<p_instr; i++){
-		for (j=0; j<insn[patch[i]].size; j++) {
-			DBG_PRINT("Writing nop opcode at %x\n", insn[patch[i]].address + j);
-			*(f->text + insn[patch[i]].address - start_addr + j)=0x90;
+			DBG_PRINT("call 0x%lx, size %d detected\n", insn[i].address, insn[i].size);
+			patch_instr(&insn[i], f);
 		}
 	}
 
