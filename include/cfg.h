@@ -58,6 +58,7 @@ struct block_list {
 	int     blocks_no;
 };
 
+void print_hex_text(struct exec_item *f);
 void patch_syscall_at(struct exec_item *f, uint64_t addr);
 void patch_calls(struct exec_item *f);
 struct Block *build_cfg(struct exec_item *f);

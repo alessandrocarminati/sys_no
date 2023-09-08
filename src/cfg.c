@@ -45,6 +45,14 @@ void patch_syscall_at(struct exec_item *f, uint64_t addr)
 	*(f->text + addr + 1) = 0x90;
 }
 
+void print_hex_text(struct exec_item *f)
+{
+	unsigned int i;
+
+	for (i=0; i< f->length; i++)
+		printf( (i & 0xf) == 0xf ? " %02x\n":" %02x", *(f->text+i));
+}
+
 void patch_calls(struct exec_item *f)
 {
 	int patch[MAX_CALL_PATCH_CNT] = {};
