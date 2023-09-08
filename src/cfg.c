@@ -40,9 +40,9 @@ static uint64_t next_instr(uint64_t curr, cs_insn *insn, int instr_no){
 
 void patch_syscall_at(struct exec_item *f, uint64_t addr)
 {
-	DBG_PRINT("syscall patching, write 2 nop at 0x%x\n", addr);
-	*(f->text + addr) = 0x90;
-	*(f->text + addr + 1) = 0x90;
+	DBG_PRINT("syscall patching, write 2 bytes nop at 0x%lx\n", addr);
+	*(f->text + addr) = *(MBNOP(2));
+	*(f->text + addr + 1) = *(MBNOP(2) + 1);
 }
 
 void print_hex_text(struct exec_item *f)
