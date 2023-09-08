@@ -5,6 +5,10 @@
 #include "../include/helper.h"
 #include "../include/global_defines.h"
 
+#define MEMORY_CHUNK_SIZE (4*1024)
+#define MEMORY_CHUNK_MASK (~(MEMORY_CHUNK_SIZE - 1))
+#define FILL_VALUE 0xfe
+
 bool x86_invert_jump(uint8_t *insn) {
 	uint16_t x86_j_near[]=
 	{0x800F, 0x810F, 0x880F, 0x890F, 0x840F, 0x850F, 0x820F, 0x830F, 0x860F, 0x870F, 0x8C0F, 0x8D0F, 0x8E0F, 0x8F0F, 0x8A0F, 0x8B0F};
@@ -28,16 +32,26 @@ bool x86_invert_jump(uint8_t *insn) {
 }
 
 static bool hook_mem_invalid(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
+	const char fill[MEMORY_CHUNK_SIZE] = {[0 ... MEMORY_CHUNK_SIZE-1] = FILL_VALUE};
+	uc_err err;
+
 	switch (type) {
 	default:
+	case UC_MEM_READ_UNMAPPED:
 		DBG_PRINT(">>> Missing memory is being READ at 0x%08lx data size = %u\n", address, size);
-		DBG_PRINT(">>> allocate 64k at 0x%08lx\n", address & 0xffffffffffff0000);
-		uc_mem_map(uc, address & 0xffffffffffff0000, 64 * 1024, UC_PROT_ALL);
+		DBG_PRINT(">>> allocate 4k at 0x%08lx for read at 0x%08lx\n", address & MEMORY_CHUNK_MASK, address);
+		err = uc_mem_map(uc, address & MEMORY_CHUNK_MASK, MEMORY_CHUNK_SIZE, UC_PROT_ALL);
+		DBG_PRINT(">>> uc_mem_map returns: %d\n",err);
+		err = uc_mem_write(uc, address & MEMORY_CHUNK_MASK, fill, MEMORY_CHUNK_SIZE);
+		DBG_PRINT(">>> uc_mem_write returns: %d\n",err);
 		return true;
 	case UC_MEM_WRITE_UNMAPPED:
 		DBG_PRINT(">>> Missing memory is being WRITE at 0x%08lx data size = %u, data value = 0x%08lx\n", address, size, value);
-		DBG_PRINT(">>> allocate 64k at 0x%08lx\n", address & 0xffffffffffff0000);
-		uc_mem_map(uc, address & 0xffffffffffff0000, 64 * 1024, UC_PROT_ALL);
+		DBG_PRINT(">>> allocate 4k at 0x%08lx\n for write at 0x%08lx\n", address & MEMORY_CHUNK_MASK, address);
+		err = uc_mem_map(uc, address & MEMORY_CHUNK_MASK, MEMORY_CHUNK_SIZE, UC_PROT_ALL);
+		DBG_PRINT(">>> uc_mem_map returns: %d\n",err);
+		err = uc_mem_write(uc, address & MEMORY_CHUNK_MASK, fill, MEMORY_CHUNK_SIZE);
+		DBG_PRINT(">>> uc_mem_write returns: %d\n",err);
 		return true;
 	}
 }
