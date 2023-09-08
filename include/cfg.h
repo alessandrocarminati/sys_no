@@ -20,10 +20,11 @@
 
 #ifdef DEBUG
 #define DBG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( 0 )
+#define DBG_DUMP_REG(cpu) dump_registers(cpu)
 #else
 #define DBG_PRINT(...) do {} while (0)
+#define DBG_DUMP_REG(cpu) do {} while (0)
 #endif
-
 
 struct exec_item {
 	uint64_t	base_address;
