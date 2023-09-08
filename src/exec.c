@@ -118,15 +118,31 @@ void dump_registers(uc_engine *uc){
         printf(">>> RIP = 0x%lx\n", reg);
 
 }
+/*
+ * This function executes a block of code. A block is a linear piece of code
+ * that has no jumps and no calls. Code needs to be patched by all calls before
+ * being sent to this function.
+ *
+ * The code starts executing the code passed as an argument and allocates memory
+ * if the code tries to access it.
+ *
+ * It is important to note that despite uc_emu_start() taking the number of
+ * instructions as an argument, the IP (Instruction Pointer) after its execution
+ * might not be at the n+1 instruction address. This is because the macro
+ * instructions for strings, such as `rep stosb`, are treated not as a single
+ * instruction, but as multiple ecx instructions. The function needs to verify
+ * the IP after the execution and restart the execution if necessary.
+ */
+
 int execute_block(uc_engine *uc, struct Block *b, struct sys_results *sys_res) {
 	uc_err err;
-	uc_hook trace1, trace2, trace3;
+	uc_hook trace1, trace2;
 	uint64_t reg;
-	uint32_t res;
-	int i;
 
 	if (!uc) return ERR_NO_VALID_CONTEXT;
 
+	DBG_PRINT("Regs at start\n");
+	DBG_DUMP_REG(uc);
 	DBG_PRINT("Settig up hooks on memory unmapped events\n");
 	uc_hook_add(uc, &trace1, UC_HOOK_MEM_READ_UNMAPPED | UC_HOOK_MEM_WRITE_UNMAPPED, hook_mem_invalid, NULL, 1, 0);
 
@@ -134,14 +150,21 @@ int execute_block(uc_engine *uc, struct Block *b, struct sys_results *sys_res) {
 	uc_hook_add(uc, &trace2, UC_HOOK_INSN, hook_syscall, sys_res, 1, 0, UC_X86_INS_SYSCALL);
 
 	DBG_PRINT("Executing block @(0x%08x ~ 0x%08x) [%d instructions] size=%d\n", b->start, b->end, b->instr_cnt, b->end - b->start);
-	err = uc_emu_start(uc, b->start, 0, 0, b->end - b->start );//0, b->instr_cnt );
-	DBG_PRINT("Executing block finished, errorcode=%d\n", err);
-	if (err) {
+	reg = b->start;
+	do {
+		err = uc_emu_start(uc, reg, 0, 0, 1 );
+		DBG_PRINT("Executing block finished, errorcode=%d\n", err);
+		if (err) {
+			uc_reg_read(uc, UC_X86_REG_RIP, &reg);
+			DBG_PRINT("Failed on uc_emu_start() at 0x%08lx with error returned %u: %s\n", reg, err, uc_strerror(err));
+			dump_registers(uc);
+			return ERR_EMULATION_START_FAILED;
+			}
+		DBG_PRINT("Regs at end - err=%d\n", err);
+		DBG_DUMP_REG(uc);
 		uc_reg_read(uc, UC_X86_REG_RIP, &reg);
-		DBG_PRINT("Failed on uc_emu_start() at 0x%08lx with error returned %u: %s\n", reg, err, uc_strerror(err));
-		dump_registers(uc);
-		return ERR_EMULATION_START_FAILED;
-		}
+	} while (reg < (uint64_t) b->end);
+
 	return b->syscall?SYSCALL:SUCCESS;
 }
 
