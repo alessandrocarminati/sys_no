@@ -20,20 +20,12 @@ int execute_block_seq(struct exec_item *f, struct block_list *b, struct sys_resu
 		DBG_PRINT(">>>>>>>>>>>>>>>>>>> Execution #%02d start <<<<<<<<<<<<<<<<<<<\n",i);
 		DBG_PRINT("Execute block #%d, start=0x%08x, end=0x%08x\n",i, b->blocks_addr[i]->start, b->blocks_addr[i]->end);
 		err=execute_block(uc, b->blocks_addr[i], sys_res);
-		DBG_PRINT("Execution error flag=%d\n",err);
 		if ((err!=SUCCESS)&&(err!=SYSCALL)) return 1;
-#ifdef DEBUG
-		dump_registers(uc);
-#endif
 		DBG_PRINT(">>>>>>>>>>>>>>>>>>> Execution #%02d end <<<<<<<<<<<<<<<<<<<\n",i);
 		}
 	emu_stop(uc);
 	return 0;
 }
-
-
-
-
 
 static int do_sysno(void* user, const char* cmd) {
 	int n;
@@ -52,14 +44,11 @@ static int do_sysno(void* user, const char* cmd) {
 			return true;
 			}
 		ut64 fcnlsize = r_anal_function_linear_size(func);
-//		ut64 fcnrsize = r_anal_function_realsize(func);
-//		eprintf ("%s: [0x%08lx] lsize=%ld rsize=%ld name=%s %s argc=%d\n", PLUGIN_NAME, core->offset, fcnlsize, fcnrsize, func->name, cmd, n);
 		struct exec_item f = {};
 		f.base_address=core->offset;
 		f.length=fcnlsize;
 		f.text=malloc(f.length);
 		if (r_io_read_at (core->io, f.base_address, f.text, f.length) ) {
-//			for (uint32_t i=0; i<f.length; i++) eprintf("%02x ", *(f.text+i));
 			struct block_list v={.blocks=NULL, .blocks_no=0}, p={.blocks=NULL, .blocks_no=0};
 			struct Block *root;
 			int tmp=0;
@@ -69,7 +58,11 @@ static int do_sysno(void* user, const char* cmd) {
 			v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
 			p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
 			sys_res=init_res();
+			printf("before\n");
+			print_hex_text(&f);
 			patch_calls(&f);
+			printf("before\n");
+			print_hex_text(&f);
 			root=build_cfg(&f);
 			printf("%s", cfg2dot(root));
 			if (root == NULL) {
@@ -78,6 +71,7 @@ static int do_sysno(void* user, const char* cmd) {
 			else {
 				eprintf(BGRN "[*]" GRN " Generating cfg for the given function\n" CRESET);
 				while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
+					eprintf(BGRN "[*]" GRN " checking a path\n" CRESET);
 					if (execute_block_seq(&f, &p, sys_res)) {
 						eprintf(BRED "[*]" RED " Premature termination!!!\n" CRESET);
 						break;
