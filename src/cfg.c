@@ -106,9 +106,9 @@ void patch_calls(struct exec_item *f)
 struct Block *build_cfg(struct exec_item *f) {
 	csh handle;
 	cs_insn *insn;
-	size_t count, jt_cnt=0;
+	size_t count, i, jt_cnt=0;
 	struct Block *first=NULL, *current, *app;
-	int i, blk_cnt=0;
+	int blk_cnt=0;
 	bool found, not_jmp_targets;
 	uint64_t jump_targets[MAX_JT];
 
@@ -140,12 +140,12 @@ struct Block *build_cfg(struct exec_item *f) {
 		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) {
 			cs_x86_op *op = &(insn[i].detail->x86.operands[0]);
 			if (op->type == X86_OP_IMM) {
-				DBG_PRINT("@%d instr adding jump_targets[%zu]=0x%08lx jmp dst\n", i, jt_cnt, op->imm);
+				DBG_PRINT("@%zu instr adding jump_targets[%zu]=0x%08lx jmp dst\n", i, jt_cnt, op->imm);
 				if (prev_instr(op->imm, insn, count)>f->base_address) jump_targets[jt_cnt++]=prev_instr(op->imm, insn, count);
 				}
 			}
 		if (cs_insn_group(handle, &insn[i], CS_GRP_RET)) {
-			DBG_PRINT("@%d instr adding jump_targets[%zu]=0x%08lx ret\n", i, jt_cnt, next_instr(insn[i].address, insn, count));
+			DBG_PRINT("@%zu instr adding jump_targets[%zu]=0x%08lx ret\n", i, jt_cnt, next_instr(insn[i].address, insn, count));
 			jump_targets[jt_cnt++]=insn[i].address;
 			}
 		}
@@ -216,7 +216,7 @@ struct Block *build_cfg(struct exec_item *f) {
 				app->forward_addr=0;
 				app->instr_cnt=0;
 				DL_APPEND(first, app);
-				DBG_PRINT("[%d] A block is just been created: Start=0x%08lx, end=0x%08lx, sys=%d, ret=%d forward=0x%08lx branch=0x%08lx, instr_sz=%d\n", 
+				DBG_PRINT("[%d] A block is just been created: Start=0x%08x, end=0x%08x, sys=%d, ret=%d forward=0x%08x branch=0x%08x, instr_sz=%d\n", 
 						blk_cnt, current->start, current->end,  current->syscall, current->ret, current->forward_addr, current->branch_addr, current->instr_cnt);
 				blk_cnt++;
 				current=app;
@@ -229,7 +229,7 @@ struct Block *build_cfg(struct exec_item *f) {
 	DL_FOREACH(first,current) {
 		found=false;
 		DL_FOREACH(first,app){
-			if ((current->branch_addr >= app->start) && (current->branch_addr < app->end)) {
+			if ((current->branch_addr >= (unsigned int)app->start) && (current->branch_addr < (unsigned int) app->end)) {
 				found=true;
 				break;
 				}
@@ -240,7 +240,7 @@ struct Block *build_cfg(struct exec_item *f) {
 
 		found=false;
 		DL_FOREACH(first,app){
-			if ((current->forward_addr >= app->start) && (current->forward_addr < app->end)) {
+			if ((current->forward_addr >= (unsigned int) app->start) && (current->forward_addr < (unsigned int) app->end)) {
 				found=true;
 				break;
 				}
