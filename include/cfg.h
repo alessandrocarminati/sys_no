@@ -25,6 +25,8 @@
 #define DBG_PRINT(...) do {} while (0)
 #define DBG_DUMP_REG(cpu) do {} while (0)
 #endif
+#define MBNOP(n) (multibyte_nop_x86 + (((n-1) * n)/2))
+extern const char multibyte_nop_x86[];
 
 struct exec_item {
 	uint64_t	base_address;
