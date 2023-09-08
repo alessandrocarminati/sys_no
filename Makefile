@@ -55,13 +55,13 @@ objects: build build/cfg.o build/paths.o build/exec.o build/helper.o
 	echo
 
 $(BUILD_DIR)/cfg.o: $(BUILD_DIR) src/cfg.c include/global_defines.h
-	$(CC) src/cfg.c -c -o $@
+	$(CC) $(CFLAGS) src/cfg.c -c -o $@
 
 $(BUILD_DIR)/paths.o: $(BUILD_DIR) src/paths.c
-	$(CC) src/paths.c -c -o $@
+	$(CC) $(CFLAGS) src/paths.c -c -o $@
 
 $(BUILD_DIR)/exec.o: $(BUILD_DIR) src/exec.c
-	$(CC) src/exec.c -c -o $@
+	$(CC) $(CFLAGS) src/exec.c -c -o $@
 
 $(BUILD_DIR)/helper.o: $(BUILD_DIR) src/helper.c
 	$(CC) src/helper.c -c -o $@
