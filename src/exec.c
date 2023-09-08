@@ -58,7 +58,6 @@ static bool hook_mem_invalid(uc_engine *uc, uc_mem_type type, uint64_t address, 
 
 static bool hook_instruction(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
 	uint64_t pc;
-	int i;
 
 	uc_reg_read(uc, UC_X86_REG_RIP, &pc);
 	DBG_PRINT("executed 0x%08lx\n", pc);
@@ -66,7 +65,6 @@ static bool hook_instruction(uc_engine *uc, uc_mem_type type, uint64_t address, 
 }
 
 static void hook_mem_fetch_check(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
-	int i;
 
 	DBG_PRINT("]] read at 0x%08lx\n", address);
 }
