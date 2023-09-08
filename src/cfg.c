@@ -45,6 +45,15 @@ void patch_syscall_at(struct exec_item *f, uint64_t addr)
 	*(f->text + addr + 1) = *(MBNOP(2) + 1);
 }
 
+void patch_instr(cs_insn *insn, struct exec_item *f)
+{
+	unsigned int i;
+
+	DBG_PRINT("patching instr at 0x%lx, (%s). multibyte_nop_x86=%p, MBNOP(%d)=%p\n", insn->address, insn->mnemonic, multibyte_nop_x86, insn->size, MBNOP(insn->size));
+	for (i=0; i<insn->size; i++)
+		*(f->text + insn->address - f->base_address + i) = *(MBNOP(insn->size) + i);
+}
+
 void print_hex_text(struct exec_item *f)
 {
 	unsigned int i;
