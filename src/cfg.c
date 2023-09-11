@@ -178,6 +178,7 @@ struct Block *build_cfg(struct exec_item *f) {
 		if (cs_insn_group(handle, &insn[i], CS_GRP_RET)) {
 			DBG_PRINT("[%d] Block starting at 0x%08x has ret\n", blk_cnt, current->start);
 			current->ret=1;
+			patch_instr(&insn[i], f);
 			}
 		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP) || !not_jmp_targets) {
 			DBG_PRINT("[%d] Process instruction at 0x%08lx determine if forward or branch needs to be filled\n", blk_cnt, insn[i].address);
