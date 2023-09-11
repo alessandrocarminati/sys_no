@@ -7,7 +7,7 @@
 
 #define MEMORY_CHUNK_SIZE (4*1024)
 #define MEMORY_CHUNK_MASK (~(MEMORY_CHUNK_SIZE - 1))
-#define FILL_VALUE 0xfe
+#define FILL_VALUE 0x90
 
 bool x86_invert_jump(uint8_t *insn) {
 	uint16_t x86_j_near[]=
@@ -37,23 +37,29 @@ static bool hook_mem_invalid(uc_engine *uc, uc_mem_type type, uint64_t address, 
 
 	switch (type) {
 	default:
+		return false;
 	case UC_MEM_READ_UNMAPPED:
 		DBG_PRINT(">>> Missing memory is being READ at 0x%08lx data size = %u\n", address, size);
 		DBG_PRINT(">>> allocate 4k at 0x%08lx for read at 0x%08lx\n", address & MEMORY_CHUNK_MASK, address);
-		err = uc_mem_map(uc, address & MEMORY_CHUNK_MASK, MEMORY_CHUNK_SIZE, UC_PROT_ALL);
-		DBG_PRINT(">>> uc_mem_map returns: %d\n",err);
-		err = uc_mem_write(uc, address & MEMORY_CHUNK_MASK, fill, MEMORY_CHUNK_SIZE);
-		DBG_PRINT(">>> uc_mem_write returns: %d\n",err);
-		return true;
+		break;
 	case UC_MEM_WRITE_UNMAPPED:
 		DBG_PRINT(">>> Missing memory is being WRITE at 0x%08lx data size = %u, data value = 0x%08lx\n", address, size, value);
 		DBG_PRINT(">>> allocate 4k at 0x%08lx\n for write at 0x%08lx\n", address & MEMORY_CHUNK_MASK, address);
-		err = uc_mem_map(uc, address & MEMORY_CHUNK_MASK, MEMORY_CHUNK_SIZE, UC_PROT_ALL);
-		DBG_PRINT(">>> uc_mem_map returns: %d\n",err);
-		err = uc_mem_write(uc, address & MEMORY_CHUNK_MASK, fill, MEMORY_CHUNK_SIZE);
-		DBG_PRINT(">>> uc_mem_write returns: %d\n",err);
-		return true;
+		break;
+	case UC_MEM_FETCH_UNMAPPED:
+		DBG_PRINT(">>> Missing memory is being fetched at 0x%08lx data size = %u, data value = 0x%08lx\n", address, size, value);
+		DBG_PRINT(">>> allocate 4k at 0x%08lx\n for fetch at 0x%08lx\n", address & MEMORY_CHUNK_MASK, address);
 	}
+	err = uc_mem_map(uc, address & MEMORY_CHUNK_MASK, MEMORY_CHUNK_SIZE, UC_PROT_ALL);
+	DBG_PRINT(">>> uc_mem_map returns: %d\n",err);
+	if (err)
+		return false;
+	err = uc_mem_write(uc, address & MEMORY_CHUNK_MASK, fill, MEMORY_CHUNK_SIZE);
+	DBG_PRINT(">>> uc_mem_write returns: %d\n",err);
+	if (err)
+		return false;
+	return true;
+
 }
 
 static bool hook_instruction(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
@@ -142,7 +148,7 @@ int execute_block(uc_engine *uc, struct Block *b, struct sys_results *sys_res) {
 	DBG_PRINT("Regs at start\n");
 	DBG_DUMP_REG(uc);
 	DBG_PRINT("Settig up hooks on memory unmapped events\n");
-	uc_hook_add(uc, &trace1, UC_HOOK_MEM_READ_UNMAPPED | UC_HOOK_MEM_WRITE_UNMAPPED, hook_mem_invalid, NULL, 1, 0);
+	uc_hook_add(uc, &trace1, UC_HOOK_MEM_READ_UNMAPPED | UC_HOOK_MEM_WRITE_UNMAPPED | UC_HOOK_MEM_FETCH_UNMAPPED, hook_mem_invalid, NULL, 1, 0);
 
 	DBG_PRINT("Settig up hooks on syscalls events\n");
 	uc_hook_add(uc, &trace2, UC_HOOK_INSN, hook_syscall, sys_res, 1, 0, UC_X86_INS_SYSCALL);
@@ -236,7 +242,7 @@ char *print_res(struct sys_results *sys_res, const char *fmt){
 	buf=(char *)malloc(RES_SIZE);
 	memset(buf, 0, RES_SIZE);
 	for (i=0; i<sys_res->num; i++) {
-		offset+=sprintf((buf+offset), fmt, sys_res->addr[i], sys_res->sys_no[i]);
+		offset+=sprintf((buf+offset), fmt, sys_res->addr[i], (int)sys_res->sys_no[i]<0?-1:sys_res->sys_no[i]);
 		}
 	return buf;
 }

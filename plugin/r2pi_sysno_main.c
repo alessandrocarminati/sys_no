@@ -58,13 +58,13 @@ static int do_sysno(void* user, const char* cmd) {
 			v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
 			p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
 			sys_res=init_res();
-			printf("before\n");
-			print_hex_text(&f);
+			DBG_PRINT("before\n");
+			DBG_PRINT_HEX_TEXT(&f);
 			patch_calls(&f);
-			printf("before\n");
-			print_hex_text(&f);
+			DBG_PRINT("before\n");
+			DBG_PRINT_HEX_TEXT(&f);
 			root=build_cfg(&f);
-			printf("%s", cfg2dot(root));
+			DBG_PRINT("%s", cfg2dot(root));
 			if (root == NULL) {
 				eprintf(BRED "[*]" RED " Function disassembly failed!!!\n" CRESET);
 			}

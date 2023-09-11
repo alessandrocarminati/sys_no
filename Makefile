@@ -12,7 +12,7 @@ PLUGIN_SRC = plugin/r2pi_sysno_main.c
 RADARE2_DIR = ../radare2
 BUILD_DIR = build
 
-#DEBUG=_debug
+DEBUG=_debug
 
 all:
 	@echo no action use "plugin or demo".

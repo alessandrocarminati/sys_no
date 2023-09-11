@@ -60,6 +60,7 @@ void print_hex_text(struct exec_item *f)
 
 	for (i=0; i< f->length; i++)
 		printf( (i & 0xf) == 0xf ? " %02x\n":" %02x", *(f->text+i));
+	printf("\n");
 }
 
 void patch_calls(struct exec_item *f)
@@ -180,7 +181,8 @@ struct Block *build_cfg(struct exec_item *f) {
 			}
 		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP) || !not_jmp_targets) {
 			DBG_PRINT("[%d] Process instruction at 0x%08lx determine if forward or branch needs to be filled\n", blk_cnt, insn[i].address);
-			current->end=i<count-1?insn[i+1].address:f->base_address+f->length;
+//			current->end=i<count-1?insn[i+1].address:f->base_address+f->length;
+			current->end=i<count-1?insn[i].address:f->base_address+f->length;
 			cs_x86_op *op = &(insn[i].detail->x86.operands[0]);
 
 			if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP)) {

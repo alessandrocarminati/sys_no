@@ -21,9 +21,11 @@
 #ifdef DEBUG
 #define DBG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( 0 )
 #define DBG_DUMP_REG(cpu) dump_registers(cpu)
+#define DBG_PRINT_HEX_TEXT(f) print_hex_text(f)
 #else
 #define DBG_PRINT(...) do {} while (0)
 #define DBG_DUMP_REG(cpu) do {} while (0)
+#define DBG_PRINT_HEX_TEXT(f) do {} while (0)
 #endif
 #define MBNOP(n) (multibyte_nop_x86 + (((n-1) * n)/2))
 extern const char multibyte_nop_x86[];
