@@ -64,7 +64,12 @@ static int do_sysno(void* user, const char* cmd) {
 			DBG_PRINT("before\n");
 			DBG_PRINT_HEX_TEXT(&f);
 			root=build_cfg(&f);
-			DBG_PRINT("%s", cfg2dot(root));
+#ifdef DEBUG
+			char *tmp;
+			tmp=cfg2dot(root);
+			DBG_PRINT("%s", tmp);
+			free(tmp);
+#endif
 			if (root == NULL) {
 				eprintf(BRED "[*]" RED " Function disassembly failed!!!\n" CRESET);
 			}
@@ -82,6 +87,9 @@ static int do_sysno(void* user, const char* cmd) {
 				eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
 				eprintf("%s\n", buf);
 			}
+			free(v.blocks);
+			free(p.blocks);
+			dispose_cfg(root);
 			dispose_res(sys_res, buf);
 		}
 		eprintf("\n");

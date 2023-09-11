@@ -67,6 +67,7 @@ struct Block *build_cfg(struct exec_item *f);
 void print_plain_cfg(struct Block *root);
 char *cfg2dot(struct Block *root);
 bool not_in(uint64_t c, uint64_t visited[], int visited_no);
+void dispose_cfg(struct Block *root);
 
 static int _print_dot(struct Block *current, char *dot, int *dot_len, uint64_t visited[], int *visited_no);
 static uint64_t prev_instr(uint64_t curr, cs_insn *insn, int instr_no);

@@ -316,3 +316,13 @@ char *cfg2dot(struct Block *root){
 	free(visited.blocks);
 	return err==NO_ERROR?dot:ERR_BUFOVF_MSG;
 }
+
+void dispose_cfg(struct Block *root){
+	struct Block *elt, *tmp;
+
+	DL_FOREACH_SAFE(root,elt,tmp) {
+		DL_DELETE(root,elt);
+		free(elt);
+	}
+
+}

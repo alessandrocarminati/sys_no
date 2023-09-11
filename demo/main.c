@@ -49,7 +49,7 @@ int main(int argc, char *argv[]){
 	struct Block *root;
 	int i, index, tmp=0;
 	struct sys_results *sys_res;
-	char *buf;
+	char *buf, *tmp2;
 
 	if (argc<=1) {
 		print_help(argv[0]);
@@ -73,7 +73,9 @@ int main(int argc, char *argv[]){
 	root=build_cfg(f[index]);
 	print_plain_cfg(root);
 	printf(BGRN "[*]" GRN " Generating cfg for the given function\n" reset);
-	printf("%s", cfg2dot(root));
+	tmp2=cfg2dot(root);
+	printf("%s", tmp2);
+	free(tmp2);
 	printf(BGRN "[*]" GRN " Generating paths from entry point to the syscalls\n" reset);
 	while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
 		DBG_PRINT(BRED "[*]" RED " Path found!\n");
@@ -89,5 +91,8 @@ int main(int argc, char *argv[]){
 	printf(BGRN "[*]" GRN " Results from guided execution:\n" reset);
 	buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}\n");
 	printf("%s\n", buf);
+	free(v.blocks);
+	free(p.blocks);
+	dispose_cfg(root);
 	dispose_res(sys_res, buf);
 }
