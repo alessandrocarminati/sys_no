@@ -242,7 +242,7 @@ char *print_res(struct sys_results *sys_res, const char *fmt){
 	buf=(char *)malloc(RES_SIZE);
 	memset(buf, 0, RES_SIZE);
 	for (i=0; i<sys_res->num; i++) {
-		offset+=sprintf((buf+offset), fmt, sys_res->addr[i], (int)sys_res->sys_no[i]<0?-1:sys_res->sys_no[i]);
+		offset+=sprintf((buf+offset), fmt, sys_res->addr[i], (int)sys_res->sys_no[i]<0?-1:(int)sys_res->sys_no[i]);
 		}
 	return buf;
 }

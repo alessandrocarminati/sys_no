@@ -37,6 +37,7 @@ static int do_sysno(void* user, const char* cmd) {
 			eprintf (BRED "[*]" RED "%s: syntax error!\n" CRESET, PLUGIN_NAME);
 			return true;
 			}
+		eprintf(BGRN "[*]" GRN " %s is starting computation\n", args[0]?args[0]:"pi");
 		RCore *core = (RCore *) user;
 		RAnalFunction *func = r_anal_get_fcn_in(core->anal, core->offset, R_ANAL_FCN_TYPE_NULL);
 		if (!func) {
