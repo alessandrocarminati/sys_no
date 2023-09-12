@@ -80,8 +80,6 @@ void patch_calls(struct exec_item *f)
 	// enable options
 	cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 
-	DBG_PRINT("Patching calls\n");
-
 	//get instructions
 	count = cs_disasm(handle, f->text, f->length, f->base_address, 0, &insn);
 	if (count <= 0) {
@@ -90,8 +88,8 @@ void patch_calls(struct exec_item *f)
 		return;
 	}
 
-
 	DBG_PRINT("Found %zu instructions\nProcessing the text\n", count);
+	DBG_PRINT("Patching calls\n");
 	for (i = 0; i < count; i++) {
 		if (cs_insn_group(handle, &insn[i], CS_GRP_CALL)) {
 			DBG_PRINT("call 0x%lx, size %d detected\n", insn[i].address, insn[i].size);
@@ -125,6 +123,7 @@ struct Block *build_cfg(struct exec_item *f) {
 
 	DBG_PRINT("Process text\n");
 
+	DBG_PRINT("exec itme statistics: Length=%d, base_addr=%08lx\n", f->length, f->base_address);
 	//get instructions
 	count = cs_disasm(handle, f->text, f->length, f->base_address, 0, &insn);
 	if (count <= 0) {

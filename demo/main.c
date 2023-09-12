@@ -49,7 +49,7 @@ int main(int argc, char *argv[]){
 	struct Block *root;
 	int i, index, tmp=0;
 	struct sys_results *sys_res;
-	char *buf, *tmp2;
+	char *buf=NULL, *tmp2=NULL;
 
 	if (argc<=1) {
 		print_help(argv[0]);
@@ -68,31 +68,50 @@ int main(int argc, char *argv[]){
 	printf(BGRN "[*]" GRN " Block statistics:\n" reset);
 	v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
 	p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
-
 	sys_res=init_res();
-	root=build_cfg(f[index]);
-	print_plain_cfg(root);
-	printf(BGRN "[*]" GRN " Generating cfg for the given function\n" reset);
-	tmp2=cfg2dot(root);
-	printf("%s", tmp2);
-	free(tmp2);
-	printf(BGRN "[*]" GRN " Generating paths from entry point to the syscalls\n" reset);
-	while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
-		DBG_PRINT(BRED "[*]" RED " Path found!\n");
-		for (i=0; i<p.blocks_no; i++) {
-			printf("0x%08x, ", p.blocks_addr[i]->start);
-			}
-		printf("\n");
-		if (execute_block_seq(f[index], &p, sys_res)) {
-			printf(BRED "[*]" RED " Premature termination!!!\n" reset);
-			break;
-			}
+	if (!sys_res) {
+		printf(BRED "[*]" RED " Premature termination!!!\n" reset);
+		dispose_res(sys_res, buf);
+		free(v.blocks);
+		free(p.blocks);
 		}
-	printf(BGRN "[*]" GRN " Results from guided execution:\n" reset);
-	buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}\n");
-	printf("%s\n", buf);
-	free(v.blocks);
-	free(p.blocks);
-	dispose_cfg(root);
-	dispose_res(sys_res, buf);
+	if (root=build_cfg(f[index])) {
+		print_plain_cfg(root);
+		printf(BGRN "[*]" GRN " Generating cfg for the given function\n" reset);
+		tmp2=cfg2dot(root);
+		printf("%s", tmp2);
+		free(tmp2);
+		printf(BGRN "[*]" GRN " Generating paths from entry point to the syscalls\n" reset);
+		while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
+			DBG_PRINT(BRED "[*]" RED " Path found!\n");
+			for (i=0; i<p.blocks_no; i++) {
+				printf("0x%08x, ", p.blocks_addr[i]->start);
+				}
+			printf("\n");
+			if (execute_block_seq(f[index], &p, sys_res)) {
+				printf(BRED "[*]" RED " Premature termination!!!\n" reset);
+				dispose_res(sys_res, buf);
+				free(v.blocks);
+				free(p.blocks);
+				dispose_cfg(root);
+				break;
+				}
+			}
+		printf(BGRN "[*]" GRN " Results from guided execution:\n" reset);
+		buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}\n");
+		printf("%s\n", buf);
+		dispose_res(sys_res, buf);
+		free(v.blocks);
+		free(p.blocks);
+		dispose_cfg(root);
+		printf(BGRN "[*]" GRN " struct sys_results size is:%d\n" reset, sizeof(struct sys_results));
+	} else {
+		dispose_res(sys_res, buf);
+		free(v.blocks);
+		free(p.blocks);
+		dispose_cfg(root);
+		printf(BRED "[*]" RED " Premature termination!!!\n" reset);
+	}
+
+
 }

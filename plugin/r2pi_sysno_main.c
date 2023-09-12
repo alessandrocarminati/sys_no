@@ -59,40 +59,57 @@ static int do_sysno(void* user, const char* cmd) {
 			v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
 			p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
 			sys_res=init_res();
+			if (!sys_res) {
+				dispose_res(sys_res, buf);
+				free(v.blocks);
+				free(p.blocks);
+				}
 			DBG_PRINT("before\n");
 			DBG_PRINT_HEX_TEXT(&f);
 			patch_calls(&f);
 			DBG_PRINT("before\n");
 			DBG_PRINT_HEX_TEXT(&f);
-			root=build_cfg(&f);
+			if ((root=build_cfg(&f))) {
 #ifdef DEBUG
-			char *tmp;
-			tmp=cfg2dot(root);
-			DBG_PRINT("%s", tmp);
-			free(tmp);
+				char *tmp_buf;
+				tmp_buf=cfg2dot(root);
+				DBG_PRINT("%s", tmp_buf);
+				free(tmp_buf);
 #endif
-			if (root == NULL) {
-				eprintf(BRED "[*]" RED " Function disassembly failed!!!\n" CRESET);
-			}
-			else {
-				eprintf(BGRN "[*]" GRN " Generating cfg for the given function\n" CRESET);
-				while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
-					eprintf(BGRN "[*]" GRN " checking a path\n" CRESET);
-					if (execute_block_seq(&f, &p, sys_res)) {
-						eprintf(BRED "[*]" RED " Premature termination!!!\n" CRESET);
-						break;
-					}
+				if (root == NULL) {
+					eprintf(BRED "[*]" RED " Function disassembly failed!!!\n" CRESET);
 				}
-				if (sys_res->num>0)
-					patch_syscall_at(&f, sys_res->addr[sys_res->num - 1]);
-				buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}");
-				eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
-				eprintf("%s\n", buf);
+				else {
+					eprintf(BGRN "[*]" GRN " Generating cfg for the given function\n" CRESET);
+					while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
+						eprintf(BGRN "[*]" GRN " checking a path\n" CRESET);
+						if (execute_block_seq(&f, &p, sys_res)) {
+							eprintf(BRED "[*]" RED " Premature termination!!!\n" CRESET);
+							free(v.blocks);
+							free(p.blocks);
+							dispose_cfg(root);
+							dispose_res(sys_res, buf);
+							break;
+						}
+					}
+					if (sys_res->num>0)
+						patch_syscall_at(&f, sys_res->addr[sys_res->num - 1]);
+					buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}");
+					eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
+					eprintf("%s\n", buf);
+				}
+				free(v.blocks);
+				free(p.blocks);
+				dispose_cfg(root);
+				dispose_res(sys_res, buf);
+			} else {
+				eprintf(BRED "[*]" RED " Analysis failed due to an error!\n" CRESET);
+				free(v.blocks);
+				free(p.blocks);
+				dispose_cfg(root);
+				dispose_res(sys_res, buf);
 			}
-			free(v.blocks);
-			free(p.blocks);
-			dispose_cfg(root);
-			dispose_res(sys_res, buf);
+
 		}
 		eprintf("\n");
 		free(f.text);
