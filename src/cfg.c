@@ -41,8 +41,8 @@ static uint64_t next_instr(uint64_t curr, cs_insn *insn, int instr_no){
 void patch_syscall_at(struct exec_item *f, uint64_t addr)
 {
 	DBG_PRINT("syscall patching, write 2 bytes nop at 0x%lx\n", addr);
-	*(f->text + addr) = *(MBNOP(2));
-	*(f->text + addr + 1) = *(MBNOP(2) + 1);
+	*((addr - f->base_address) + f->text) = *(MBNOP(2));
+	*((addr - f->base_address + 1) + f->text) = *(MBNOP(2) + 1);
 }
 
 void patch_instr(cs_insn *insn, struct exec_item *f)
