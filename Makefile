@@ -1,15 +1,15 @@
 CC=clang
 
-EXTRA_CFLAGS= -Wno-error=unused-parameter -Wno-error=unused-function
-CFLAGS = -Wall -Wextra -Werror -O2 -fPIC $(EXTRA_CFLAGS)
-LDFLAGS = -shared -lr_core
+EXTRA_CFLAGS= -Wno-error=unused-parameter -Wno-error=unused-function -Wno-error=unused-command-line-argument -Wno-error=sign-compare
+PKG_CONFIG_FLAGS = `pkg-config --cflags --libs rz_core`
+CFLAGS = -Wall -Wextra -Werror -O2 -fPIC $(PKG_CONFIG_FLAGS) $(EXTRA_CFLAGS)
+LDFLAGS = -shared -lcapstone -lunicorn
 
 AUTHOR = $(shell git config user.name)
 
 PLUGIN_NAME = sysno
-RADARE_LOCAL_PLUGIN = ~/.local/share/radare2/plugins
+RIZIN_LOCAL_PLUGIN = ~/.local/lib64/rizin/plugins
 PLUGIN_SRC = plugin/r2pi_sysno_main.c
-RADARE2_DIR = ../radare2
 BUILD_DIR = build
 
 DEBUG=_debug
@@ -43,10 +43,10 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(BUILD_DIR)/$(PLUGIN_NAME).so: $(PLUGIN_SRC) $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -I$(RADARE2_DIR)/libr/include -I$(RADARE2_DIR)/shlr/sdb/src -L$(RADARE2_DIR)/libr/core/ $(PLUGIN_SRC) $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o -DAUTHOR="\"$(AUTHOR)\"" -lunicorn -lcapstone
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(PLUGIN_SRC) $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o -DAUTHOR="\"$(AUTHOR)\""
 
 $(BUILD_DIR)/demo: $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o demo/fp.c demo/main.c $(BUILD_DIR)/generate_header
-	$(CC) $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o demo/fp.c demo/main.c -lunicorn -lcapstone -g -o $(BUILD_DIR)/demo
+	$(CC) $(BUILD_DIR)/cfg.o $(BUILD_DIR)/paths.o $(BUILD_DIR)/exec.o $(BUILD_DIR)/helper.o demo/fp.c demo/main.c -g -o $(BUILD_DIR)/demo
 
 $(BUILD_DIR)/generate_header: $(BUILD_DIR) tool/generate_header.c
 	$(CC) -o $@ tool/generate_header.c
@@ -71,5 +71,6 @@ clean:
 	rm include/global_defines.h
 
 install: plugin
-	cp $(BUILD_DIR)/$(PLUGIN_NAME).so $(RADARE_LOCAL_PLUGIN)
-	echo Radare Plugin installed at $(RADARE_LOCAL_PLUGIN)
+	mkdir -p $(RIZIN_LOCAL_PLUGIN)
+	cp $(BUILD_DIR)/$(PLUGIN_NAME).so $(RIZIN_LOCAL_PLUGIN)
+	echo Rizin Plugin installed at $(RIZIN_LOCAL_PLUGIN)

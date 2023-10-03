@@ -1,5 +1,5 @@
-#include <r_core.h>
-#include <r_anal.h>
+#include <rz_core.h>
+#include <rz_analysis.h>
 #include <string.h>
 #include "../include/cfg.h"
 #include "../include/paths.h"
@@ -8,6 +8,15 @@
 #include "../include/ansi_term.h"
 #include "r2pi_sysno.h"
 
+
+static const RzCmdDescArg sysno_args[] = {
+	{ 0 },
+};
+
+static const RzCmdDescHelp sysno_help = {
+	.summary = "uses capstone and unicorn to find syscalls in current function",
+	.args = sysno_args,
+};
 
 int execute_block_seq(struct exec_item *f, struct block_list *b, struct sys_results *sys_res){
 	uc_engine *uc;
@@ -27,110 +36,123 @@ int execute_block_seq(struct exec_item *f, struct block_list *b, struct sys_resu
 	return 0;
 }
 
-static int do_sysno(void* user, const char* cmd) {
-	int n;
-	char *args[7];
+static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
+	eprintf(BGRN "[*]" GRN " sysno is starting computation\n");
+	RzAnalysisFunction *func = rz_analysis_get_fcn_in(core->analysis, core->offset, RZ_ANALYSIS_FCN_TYPE_NULL);
+	if (!func) {
+		eprintf (BRED "[*]" RED "no anal data, please run analysis before calling this\n" CRESET);
+		return RZ_CMD_STATUS_OK;
+		}
+	ut64 fcnlsize = rz_analysis_function_linear_size(func);
+	struct exec_item f = {};
+	f.base_address=core->offset;
+	f.length=fcnlsize;
+	f.text=malloc(f.length);
+	if (rz_io_read_at (core->io, f.base_address, f.text, f.length) ) {
+		struct block_list v={.blocks=NULL, .blocks_no=0}, p={.blocks=NULL, .blocks_no=0};
+		struct Block *root;
+		int tmp=0;
+		struct sys_results *sys_res;
+		char *buf = NULL;
 
-	if (strncmp("sysno", cmd, 5)==0) {
-		n=PROC_CMD_PARSE(cmd, args);
-		if ((n<1)|| (n>2)) {
-			eprintf (BRED "[*]" RED "%s: syntax error!\n" CRESET, PLUGIN_NAME);
-			return true;
+		v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
+		p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
+		sys_res=init_res();
+		if (!sys_res) {
+			dispose_res(sys_res, buf);
+			free(v.blocks);
+			free(p.blocks);
 			}
-		eprintf(BGRN "[*]" GRN " %s is starting computation\n", args[0]?args[0]:"pi");
-		RCore *core = (RCore *) user;
-		RAnalFunction *func = r_anal_get_fcn_in(core->anal, core->offset, R_ANAL_FCN_TYPE_NULL);
-		if (!func) {
-			eprintf (BRED "[*]" RED "no anal data, please run analysis before calling this\n" CRESET);
-			return true;
-			}
-		ut64 fcnlsize = r_anal_function_linear_size(func);
-		struct exec_item f = {};
-		f.base_address=core->offset;
-		f.length=fcnlsize;
-		f.text=malloc(f.length);
-		if (r_io_read_at (core->io, f.base_address, f.text, f.length) ) {
-			struct block_list v={.blocks=NULL, .blocks_no=0}, p={.blocks=NULL, .blocks_no=0};
-			struct Block *root;
-			int tmp=0;
-			struct sys_results *sys_res;
-			char *buf = NULL;
-
-			v.blocks=(uint64_t *) malloc(MAX_BLOCKS*sizeof(uint64_t));
-			p.blocks_addr=(struct Block **) malloc(MAX_BLOCKS*sizeof(uint64_t));
-			sys_res=init_res();
-			if (!sys_res) {
-				dispose_res(sys_res, buf);
-				free(v.blocks);
-				free(p.blocks);
-				}
-			DBG_PRINT("before\n");
-			DBG_PRINT_HEX_TEXT(&f);
-			patch_calls(&f);
-			DBG_PRINT("before\n");
-			DBG_PRINT_HEX_TEXT(&f);
-			if ((root=build_cfg(&f))) {
+		DBG_PRINT("before\n");
+		DBG_PRINT_HEX_TEXT(&f);
+		patch_calls(&f);
+		DBG_PRINT("before\n");
+		DBG_PRINT_HEX_TEXT(&f);
+		if ((root=build_cfg(&f))) {
 #ifdef DEBUG
-				char *tmp_buf;
-				tmp_buf=cfg2dot(root);
-				DBG_PRINT("%s", tmp_buf);
-				free(tmp_buf);
+			char *tmp_buf;
+			tmp_buf=cfg2dot(root);
+			DBG_PRINT("%s", tmp_buf);
+			free(tmp_buf);
 #endif
-				if (root == NULL) {
-					eprintf(BRED "[*]" RED " Function disassembly failed!!!\n" CRESET);
-				}
-				else {
-					eprintf(BGRN "[*]" GRN " Generating cfg for the given function\n" CRESET);
-					while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
-						eprintf(BGRN "[*]" GRN " checking a path\n" CRESET);
-						if (execute_block_seq(&f, &p, sys_res)) {
-							eprintf(BRED "[*]" RED " Premature termination!!!\n" CRESET);
-							free(v.blocks);
-							free(p.blocks);
-							dispose_cfg(root);
-							dispose_res(sys_res, buf);
-							break;
-						}
-					}
-					if (sys_res->num>0)
-						patch_syscall_at(&f, sys_res->addr[sys_res->num - 1]);
-					buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}");
-					eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
-					eprintf("%s\n", buf);
-				}
-				free(v.blocks);
-				free(p.blocks);
-				dispose_cfg(root);
-				dispose_res(sys_res, buf);
-			} else {
-				eprintf(BRED "[*]" RED " Analysis failed due to an error!\n" CRESET);
-				free(v.blocks);
-				free(p.blocks);
-				dispose_cfg(root);
-				dispose_res(sys_res, buf);
+			if (root == NULL) {
+				eprintf(BRED "[*]" RED " Function disassembly failed!!!\n" CRESET);
 			}
+			else {
+				eprintf(BGRN "[*]" GRN " Generating cfg for the given function\n" CRESET);
+				while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
+					eprintf(BGRN "[*]" GRN " checking a path\n" CRESET);
+					if (execute_block_seq(&f, &p, sys_res)) {
+						eprintf(BRED "[*]" RED " Premature termination!!!\n" CRESET);
+						free(v.blocks);
+						free(p.blocks);
+						dispose_cfg(root);
+						dispose_res(sys_res, buf);
+						break;
+					}
+				}
+				if (sys_res->num>0)
+					patch_syscall_at(&f, sys_res->addr[sys_res->num - 1]);
+				buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}");
+				eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
+				eprintf("%s\n", buf);
+			}
+			free(v.blocks);
+			free(p.blocks);
+			dispose_cfg(root);
+			dispose_res(sys_res, buf);
+		} else {
+			eprintf(BRED "[*]" RED " Analysis failed due to an error!\n" CRESET);
+			free(v.blocks);
+			free(p.blocks);
+			dispose_cfg(root);
+			dispose_res(sys_res, buf);
+      return RZ_CMD_STATUS_ERROR;
+		}
 
-		}
-		eprintf("\n");
-		free(f.text);
-		return true;
-		}
-	return false;
+	}
+	eprintf("\n");
+	free(f.text);
+	return RZ_CMD_STATUS_OK;
 }
 
-RCorePlugin core_plugin_desc = {
+static bool sysno_init(RzCore *core) {
+	eprintf("[*] Sysno initialization...\n");
+	RzCmd *rcmd = core->rcmd;
+	RzCmdDesc *root_cd = rz_cmd_get_root(rcmd);
+	if (!root_cd) {
+		return false;
+	}
+
+	RzCmdDesc *cd = rz_cmd_desc_argv_new(rcmd, root_cd, "sysno", do_sysno, &sysno_help);
+	if (!cd) {
+		rz_warn_if_reached();
+		return false;
+	}
+
+	return true;
+}
+
+static bool sysno_fini(RzCore *core) {
+	eprintf("[*] Sysno deinitialization...\n");
+	return true;
+}
+
+
+RzCorePlugin sysno_plugin_desc = {
 	.name = "Syscall Unicorn",
 	.desc = "It provides syscall numbers used in the current function",
 	.license = "MIT",
 	.author = AUTHOR,
 	.version = "0.0.1",
-	.call = do_sysno,
+	.init = sysno_init,
+	.fini = sysno_fini
 };
 
-#ifndef CORELIB
-struct r_lib_struct_t radare_plugin = {
-	.type = R_LIB_TYPE_CORE,
-	.data = &core_plugin_desc,
-	.version = R2_VERSION
+#ifndef RZ_PLUGIN_INCORE
+RzLibStruct rizin_plugin = {
+	.type = RZ_LIB_TYPE_CORE,
+	.data = &sysno_plugin_desc,
+	.version = RZ_VERSION
 };
 #endif
