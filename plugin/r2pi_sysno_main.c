@@ -9,7 +9,7 @@
 #include "r2pi_sysno.h"
 
 
-int execute_block_seq(struct exec_item *f, struct block_list *b, struct sys_results *sys_res){
+static int execute_block_seq(struct exec_item *f, struct block_list *b, struct sys_results *sys_res){
 	uc_engine *uc;
 	int i, err;
 
@@ -26,6 +26,29 @@ int execute_block_seq(struct exec_item *f, struct block_list *b, struct sys_resu
 	emu_stop(uc);
 	return 0;
 }
+
+static struct Block *find_block_from_addr(struct Block *root, int addr){
+	struct Block *tmp = root;
+
+	while ((tmp) && (tmp->start != addr)) {
+		tmp=tmp->next;
+	}
+	return tmp;
+}
+
+static int execute_single_block(struct exec_item *f, struct Block *b, struct sys_results *sys_res){
+	uc_engine *uc;
+	int err;
+
+	err=emu_init(f->text, f->base_address, f->length, &uc);
+	if (err) return 1;
+	err=execute_block(uc, b, sys_res);
+	if (err!=SYSCALL) return 0;
+	emu_stop(uc);
+	return 1;
+}
+
+
 
 static int do_sysno(void* user, const char* cmd) {
 	int n;
@@ -83,6 +106,10 @@ static int do_sysno(void* user, const char* cmd) {
 					eprintf(BGRN "[*]" GRN " Generating cfg for the given function\n" CRESET);
 					while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
 						eprintf(BGRN "[*]" GRN " checking a path\n" CRESET);
+						for (int i=0; i<p.blocks_no; i++) {
+							eprintf(YEL "0x%08x,", p.blocks_addr[i]->start);
+						}
+						eprintf("\n" CRESET);
 						if (execute_block_seq(&f, &p, sys_res)) {
 							eprintf(BRED "[*]" RED " Premature termination!!!\n" CRESET);
 							free(v.blocks);
@@ -91,9 +118,20 @@ static int do_sysno(void* user, const char* cmd) {
 							dispose_res(sys_res, buf);
 							break;
 						}
+						if (sys_res->num>0)
+							patch_syscall_at(&f, sys_res->addr[sys_res->num - 1]);
 					}
-					if (sys_res->num>0)
-						patch_syscall_at(&f, sys_res->addr[sys_res->num - 1]);
+					eprintf(BYEL "[*]" YEL " Syscall found are %d, cfg results are %d, there are %d still to figure out.!!!\n" CRESET, f.syscalls, sys_res->num, f.syscalls - sys_res->num);
+
+					for (unsigned int i=0; i<f.syscalls; i++){
+						eprintf(BYEL "[*]" YEL " %s block at 0x%08lx syscall at 0x%08lx is %s\n" CRESET, 
+							f.syscall_map[i].used?"Skip":"Process", f.syscall_map[i].blk_address, f.syscall_map[i].sys_address, f.syscall_map[i].used?"known":"unknown");
+						if (!f.syscall_map[i].used) {
+							int found = execute_single_block(&f, find_block_from_addr(root, f.syscall_map[i].blk_address), sys_res);
+							printf("%s", found?BGRN "[*]" GRN " New syscall number!\n" CRESET:BRED "[*]" RED " no luck!!!\n" CRESET);
+						}
+					}
+
 					buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}");
 					eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
 					eprintf("%s\n", buf);
