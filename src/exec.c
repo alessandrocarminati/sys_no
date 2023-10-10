@@ -165,10 +165,19 @@ int execute_block(uc_engine *uc, struct Block *b, struct sys_results *sys_res) {
 			return ERR_EMULATION_START_FAILED;
 			}
 		DBG_PRINT("Regs at end - err=%d\n", err);
-		DBG_DUMP_REG(uc);
+		//DBG_DUMP_REG(uc);
 		uc_reg_read(uc, UC_X86_REG_RIP, &reg);
 	} while (reg < (uint64_t) b->end);
-
+	err = uc_emu_start(uc, reg, 0, 0, 1 );
+	DBG_PRINT("Executing block finished, errorcode=%d\n", err);
+	if (err) {
+		uc_reg_read(uc, UC_X86_REG_RIP, &reg);
+		DBG_PRINT("Failed on uc_emu_start() at 0x%08lx with error returned %u: %s\n", reg, err, uc_strerror(err));
+		dump_registers(uc);
+		return ERR_EMULATION_START_FAILED;
+		}
+	DBG_PRINT("Regs at end - err=%d\n", err);
+	DBG_DUMP_REG(uc);
 	return b->syscall?SYSCALL:SUCCESS;
 }
 
