@@ -241,7 +241,7 @@ struct Block *build_cfg(struct exec_item *f) {
 	DL_FOREACH(first,current) {
 		found=false;
 		DL_FOREACH(first,app){
-			if ((current->branch_addr >= (unsigned int)app->start) && (current->branch_addr < (unsigned int) app->end)) {
+			if ((current->branch_addr >= (unsigned int)app->start) && (current->branch_addr <= (unsigned int) app->end)) {
 				found=true;
 				break;
 				}
@@ -252,7 +252,7 @@ struct Block *build_cfg(struct exec_item *f) {
 
 		found=false;
 		DL_FOREACH(first,app){
-			if ((current->forward_addr >= (unsigned int) app->start) && (current->forward_addr < (unsigned int) app->end)) {
+			if ((current->forward_addr >= (unsigned int) app->start) && (current->forward_addr <= (unsigned int) app->end)) {
 				found=true;
 				break;
 				}
