@@ -173,7 +173,7 @@ static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
 			free(p.blocks);
 			dispose_cfg(root);
 			dispose_res(sys_res, buf);
-      return RZ_CMD_STATUS_ERROR;
+			return RZ_CMD_STATUS_ERROR;
 		}
 
 	}
