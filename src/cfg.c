@@ -40,9 +40,13 @@ static uint64_t next_instr(uint64_t curr, cs_insn *insn, int instr_no){
 
 void patch_syscall_at(struct exec_item *f, uint64_t addr)
 {
+	int i=0;
+
 	DBG_PRINT("syscall patching, write 2 bytes nop at 0x%lx\n", addr);
 	*((addr - f->base_address) + f->text) = *(MBNOP(2));
 	*((addr - f->base_address + 1) + f->text) = *(MBNOP(2) + 1);
+	while (addr != f->syscall_map[i].sys_address) i++;
+	f->syscall_map[i].used = true;
 }
 
 void patch_instr(cs_insn *insn, struct exec_item *f)
@@ -172,6 +176,12 @@ struct Block *build_cfg(struct exec_item *f) {
 		not_jmp_targets=not_in(insn[i].address, jump_targets, jt_cnt);
 		if (cs_insn_group(handle, &insn[i], CS_GRP_INT)) {
 			DBG_PRINT("[%d] Block starting at 0x%08x has syscall\n", blk_cnt, current->start);
+			if (f->syscalls<MAX_SYSCALL_IN_FUNC) {
+				f->syscall_map[f->syscalls].sys_address = insn[i].address;
+				f->syscall_map[f->syscalls].blk_address = current->start;
+				f->syscalls++;
+			}
+
 			current->syscall=1;
 			}
 		if (cs_insn_group(handle, &insn[i], CS_GRP_RET)) {
