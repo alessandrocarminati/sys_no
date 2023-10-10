@@ -16,6 +16,7 @@
 #define NO_ERROR		0
 #define ERR_BUFOVF		1
 #define ERR_BUFOVF_MSG		"Dot buffer too small"
+#define MAX_SYSCALL_IN_FUNC	32
 
 #ifdef DEBUG
 #define DBG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( 0 )
@@ -29,10 +30,18 @@
 #define MBNOP(n) (multibyte_nop_x86 + (((n-1) * n)/2))
 extern const char multibyte_nop_x86[];
 
+struct map_item {
+	uint64_t	blk_address;
+	uint64_t	sys_address;
+	bool 		used;
+};
+
 struct exec_item {
 	uint64_t	base_address;
 	uint32_t	length;
 	unsigned char 	*text;
+	unsigned int	syscalls;
+	struct map_item	syscall_map[MAX_SYSCALL_IN_FUNC];
 #ifdef DEMO
 	char 		*disass;
 	char		*name;
