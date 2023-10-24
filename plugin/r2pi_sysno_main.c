@@ -143,39 +143,8 @@ static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
 			free(p.blocks);
 			dispose_cfg(root);
 			dispose_res(sys_res, buf);
-			}
-			else {
-				eprintf(BGRN "[*]" GRN " Generating cfg for the given function\n" CRESET);
-				while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
-					eprintf(BGRN "[*]" GRN " checking a path\n" CRESET);
-					if (execute_block_seq(&f, &p, sys_res)) {
-						eprintf(BRED "[*]" RED " Premature termination!!!\n" CRESET);
-						free(v.blocks);
-						free(p.blocks);
-						dispose_cfg(root);
-						dispose_res(sys_res, buf);
-						break;
-					}
-				}
-				if (sys_res->num>0)
-					patch_syscall_at(&f, sys_res->addr[sys_res->num - 1]);
-				buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}");
-				eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
-				eprintf("%s\n", buf);
-			}
-			free(v.blocks);
-			free(p.blocks);
-			dispose_cfg(root);
-			dispose_res(sys_res, buf);
-		} else {
-			eprintf(BRED "[*]" RED " Analysis failed due to an error!\n" CRESET);
-			free(v.blocks);
-			free(p.blocks);
-			dispose_cfg(root);
-			dispose_res(sys_res, buf);
 			return RZ_CMD_STATUS_ERROR;
-		}
-
+			}
 	}
 	eprintf("\n");
 	free(f.text);
