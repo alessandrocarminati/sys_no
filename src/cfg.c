@@ -212,11 +212,13 @@ struct Block *build_cfg(struct exec_item *f) {
 					// Direct jump or call
 					DBG_PRINT("[%d] Hit Block termination @0x%08lx set branch_addr=0x%08lx\n", blk_cnt, insn[i].address, op->imm);
 					if (insn[i].id != X86_INS_CALL) current->branch_addr=op->imm;
+					patch_instr(&insn[i], f, NOP_ONLY);
 					}
 				if (op->type == X86_OP_MEM) {
 					// Indirect jump or call
 					DBG_PRINT("[%d] Hit Block termination @0x%08lx set branch_addr=0x%08lx\n", blk_cnt, insn[i].address, 1UL);
 					if (insn[i].id != X86_INS_CALL) current->branch_addr=1;
+					patch_instr(&insn[i], f, NOP_ONLY);
 					}
 				}
 
