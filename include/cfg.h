@@ -17,6 +17,9 @@
 #define ERR_BUFOVF		1
 #define ERR_BUFOVF_MSG		"Dot buffer too small"
 #define MAX_SYSCALL_IN_FUNC	32
+#define RET_NOP			0
+#define NOP_ONLY		1
+
 
 #ifdef DEBUG
 #define DBG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( 0 )
@@ -27,8 +30,9 @@
 #define DBG_DUMP_REG(cpu) do {} while (0)
 #define DBG_PRINT_HEX_TEXT(f) do {} while (0)
 #endif
-#define MBNOP(n) (multibyte_nop_x86 + (((n-1) * n)/2))
+#define MBNOP(n,t) (t==NOP_ONLY?multibyte_nop_x86 + (((n-1) * n)/2):multibyte_ret_nop_x86 + (((n-1) * n)/2))
 extern const char multibyte_nop_x86[];
+extern const char multibyte_ret_nop_x86[];
 
 struct map_item {
 	uint64_t	blk_address;
@@ -70,7 +74,7 @@ struct block_list {
 
 void print_hex_text(struct exec_item *f);
 void patch_syscall_at(struct exec_item *f, uint64_t addr);
-void patch_calls(struct exec_item *f);
+void patch_calls(struct exec_item *f, int64_t fatal_addr);
 struct Block *build_cfg(struct exec_item *f);
 void print_plain_cfg(struct Block *root);
 char *cfg2dot(struct Block *root);

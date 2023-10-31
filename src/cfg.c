@@ -18,6 +18,16 @@ const char multibyte_nop_x86[]=
 		"\x0f\x1f\x80\x00\x00\x00\x00"
 		"\x0f\x1f\x84\x00\x00\x00\x00\x00"
 		"\x66\x0f\x1f\x84\x00\x00\x00\x00\x00";
+const char multibyte_ret_nop_x86[]=
+                "\xc3"
+		"\xc3\x90"
+		"\xc3\x66\x90"
+		"\xc3\x0f\x1f\x00"
+		"\xc3\x0f\x1f\x40\x00"
+		"\xc3\x66\x66\x66\x66\x90"
+		"\xc3\x66\x0f\x1f\x44\x00\x00"
+		"\xc3\x0f\x1f\x80\x00\x00\x00\x00"
+		"\xc3\x0f\x1f\x84\x00\x00\x00\x00\x00";
 
 static uint64_t prev_instr(uint64_t curr, cs_insn *insn, int instr_no){
 	int i;
@@ -43,19 +53,19 @@ void patch_syscall_at(struct exec_item *f, uint64_t addr)
 	int i=0;
 
 	DBG_PRINT("syscall patching, write 2 bytes nop at 0x%lx\n", addr);
-	*((addr - f->base_address) + f->text) = *(MBNOP(2));
-	*((addr - f->base_address + 1) + f->text) = *(MBNOP(2) + 1);
+	*((addr - f->base_address) + f->text) = *(MBNOP(2,NOP_ONLY));
+	*((addr - f->base_address + 1) + f->text) = *(MBNOP(2,NOP_ONLY) + 1);
 	while (addr != f->syscall_map[i].sys_address) i++;
 	f->syscall_map[i].used = true;
 }
 
-void patch_instr(cs_insn *insn, struct exec_item *f)
+void patch_instr(cs_insn *insn, struct exec_item *f, int type)
 {
 	unsigned int i;
 
-	DBG_PRINT("patching instr at 0x%lx, (%s). multibyte_nop_x86=%p, MBNOP(%d)=%p\n", insn->address, insn->mnemonic, multibyte_nop_x86, insn->size, MBNOP(insn->size));
+	DBG_PRINT("patching instr at 0x%lx, (%s). multibyte_nop_x86=%p, MBNOP(%d,type)=%p\n", insn->address, insn->mnemonic, multibyte_nop_x86, insn->size, MBNOP(insn->size, type));
 	for (i=0; i<insn->size; i++)
-		*(f->text + insn->address - f->base_address + i) = *(MBNOP(insn->size) + i);
+		*(f->text + insn->address - f->base_address + i) = *(MBNOP(insn->size, type) + i);
 }
 
 void print_hex_text(struct exec_item *f)
@@ -67,7 +77,7 @@ void print_hex_text(struct exec_item *f)
 	printf("\n");
 }
 
-void patch_calls(struct exec_item *f)
+void patch_calls(struct exec_item *f, int64_t fatal_addr)
 {
 	size_t count, i;
 	cs_insn *insn;
@@ -95,9 +105,10 @@ void patch_calls(struct exec_item *f)
 	DBG_PRINT("Found %zu instructions\nProcessing the text\n", count);
 	DBG_PRINT("Patching calls\n");
 	for (i = 0; i < count; i++) {
+		DBG_PRINT("check instr @%p [%zu]:%lx %s\n", insn, i, insn[i].address, insn[i].mnemonic);
 		if (cs_insn_group(handle, &insn[i], CS_GRP_CALL)) {
-			DBG_PRINT("call 0x%lx, size %d detected\n", insn[i].address, insn[i].size);
-			patch_instr(&insn[i], f);
+			DBG_PRINT("call 0x%lx, size %d detected target 0x%lx, %d\n", insn[i].address, insn[i].size, insn[i].detail->x86.operands[0].imm, insn[i].detail->x86.operands[0].imm==fatal_addr?RET_NOP:NOP_ONLY);
+			patch_instr(&insn[i], f, insn[i].detail->x86.operands[0].imm==fatal_addr?RET_NOP:NOP_ONLY );
 		}
 	}
 
@@ -187,7 +198,7 @@ struct Block *build_cfg(struct exec_item *f) {
 		if (cs_insn_group(handle, &insn[i], CS_GRP_RET)) {
 			DBG_PRINT("[%d] Block starting at 0x%08x has ret\n", blk_cnt, current->start);
 			current->ret=1;
-			patch_instr(&insn[i], f);
+			patch_instr(&insn[i], f, NOP_ONLY);
 			}
 		if (cs_insn_group(handle, &insn[i], CS_GRP_JUMP) || !not_jmp_targets) {
 			DBG_PRINT("[%d] Process instruction at 0x%08lx determine if forward or branch needs to be filled\n", blk_cnt, insn[i].address);
