@@ -19,7 +19,7 @@
 #define ERR_CANT_ALLOCATE_TEXT 6
 #define ERR_CANT_ALLOCATE_STACK 7
 
-#define SYS_MAX_RES 20
+#define SYS_MAX_RES 200
 
 struct sys_results {
 	uint64_t addr[SYS_MAX_RES];

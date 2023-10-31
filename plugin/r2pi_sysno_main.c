@@ -87,7 +87,7 @@ static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
 		DBG_PRINT("before\n");
 		DBG_PRINT_HEX_TEXT(&f);
 		patch_calls(&f);
-		DBG_PRINT("before\n");
+		DBG_PRINT("after\n");
 		DBG_PRINT_HEX_TEXT(&f);
 		if ((root=build_cfg(&f))) {
 #ifdef DEBUG
@@ -132,6 +132,7 @@ static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
 				buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}");
 				eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
 				eprintf("%s\n", buf);
+				putchar(0); // from marcin
 			}
 			free(v.blocks);
 			free(p.blocks);

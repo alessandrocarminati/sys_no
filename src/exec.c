@@ -223,8 +223,9 @@ void emu_stop(uc_engine *uc){
 }
 
 struct sys_results *init_res(void){
-	void *sys_res = malloc(sizeof(struct sys_results));;
-        memset(sys_res, 0, sizeof(struct sys_results));
+	void *sys_res = malloc(sizeof(struct sys_results)*SYS_MAX_RES);;
+        memset(sys_res, 0, sizeof(struct sys_results)*SYS_MAX_RES);
+	DBG_PRINT("quick check : sys_results.num=%d\n", ((struct sys_results *)sys_res)->num);
 	return (struct sys_results *) sys_res;
 }
 

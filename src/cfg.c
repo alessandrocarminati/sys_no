@@ -70,7 +70,7 @@ void print_hex_text(struct exec_item *f)
 void patch_calls(struct exec_item *f)
 {
 	size_t count, i;
-	cs_insn *insn;
+	cs_insn *insn=NULL;
 	csh handle;
 
 
@@ -85,7 +85,9 @@ void patch_calls(struct exec_item *f)
 	cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 
 	//get instructions
+	DBG_PRINT("insn=%p\n", insn);
 	count = cs_disasm(handle, f->text, f->length, f->base_address, 0, &insn);
+	DBG_PRINT("insn=%p\n", insn);
 	if (count <= 0) {
 		DBG_PRINT("Error disassembling code\n");
 		cs_close(&handle);
@@ -95,6 +97,7 @@ void patch_calls(struct exec_item *f)
 	DBG_PRINT("Found %zu instructions\nProcessing the text\n", count);
 	DBG_PRINT("Patching calls\n");
 	for (i = 0; i < count; i++) {
+		DBG_PRINT("check instr @%p [%zu]:%lx %s\n", insn, i, insn[i].address, insn[i].mnemonic);
 		if (cs_insn_group(handle, &insn[i], CS_GRP_CALL)) {
 			DBG_PRINT("call 0x%lx, size %d detected\n", insn[i].address, insn[i].size);
 			patch_instr(&insn[i], f);
@@ -127,7 +130,7 @@ struct Block *build_cfg(struct exec_item *f) {
 
 	DBG_PRINT("Process text\n");
 
-	DBG_PRINT("exec itme statistics: Length=%d, base_addr=%08lx\n", f->length, f->base_address);
+	DBG_PRINT("exec item statistics: Length=%d, base_addr=%08lx\n", f->length, f->base_address);
 	//get instructions
 	count = cs_disasm(handle, f->text, f->length, f->base_address, 0, &insn);
 	if (count <= 0) {
@@ -215,6 +218,7 @@ struct Block *build_cfg(struct exec_item *f) {
 				if (strcmp(insn[i].mnemonic, "jmp")) {
 					DBG_PRINT("[%d] Hit Block termination @0x%08lx set forward_addr=0x%08lx\n", blk_cnt, insn[i].address, insn[i+1].address);
 					if (!current->ret) current->forward_addr=insn[i+1].address;
+					patch_instr(&insn[i], f);//<<<
 					}
 				if ((app=(struct Block *) malloc(sizeof(struct Block)))==NULL){
 					printf("Error Allocating memory\n");
