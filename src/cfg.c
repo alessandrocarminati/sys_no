@@ -59,11 +59,20 @@ void patch_syscall_at(struct exec_item *f, uint64_t addr)
 	f->syscall_map[i].used = true;
 }
 
+void hexify(const char* input, char* buffer, int size) {
+
+	for (int i = 0; i < size; i++) sprintf(&buffer[i * 2], "%02x ",(uint8_t) input[i]);
+}
+
 void patch_instr(cs_insn *insn, struct exec_item *f, int type)
 {
 	unsigned int i;
+#ifdef DEBUG
+	char buffer[32];
 
-	DBG_PRINT("patching instr at 0x%lx, (%s). multibyte_nop_x86=%p, MBNOP(%d,type)=%p\n", insn->address, insn->mnemonic, multibyte_nop_x86, insn->size, MBNOP(insn->size, type));
+	hexify(MBNOP(insn->size, type), buffer, insn->size);
+#endif
+	DBG_PRINT("patching instr at 0x%lx, (%s). multibyte_nop_x86=%p, MBNOP(%d,type)=%s\n", insn->address, insn->mnemonic, multibyte_nop_x86, insn->size, buffer);
 	for (i=0; i<insn->size; i++)
 		*(f->text + insn->address - f->base_address + i) = *(MBNOP(insn->size, type) + i);
 }
