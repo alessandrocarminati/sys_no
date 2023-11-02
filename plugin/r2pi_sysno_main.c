@@ -56,8 +56,8 @@ static int execute_single_block(struct exec_item *f, struct Block *b, struct sys
 	emu_stop(uc);
 	return 1;
 }
-
-+RAnalFunction *r_anal_fcn_find_name(RAnal *anal, const char *name) {
+/*
+RAnalFunction *r_anal_fcn_find_name(RAnal *anal, const char *name) {
 	RAnalFunction *fcn = NULL;
 	RListIter *iter;
 	r_list_foreach (anal->fcns, iter, fcn) {
@@ -67,7 +67,7 @@ static int execute_single_block(struct exec_item *f, struct Block *b, struct sys
 		}
 	return NULL;
 }
-
+*/
 static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
 	eprintf(BGRN "[*]" GRN " sysno is starting computation\n");
 	RzAnalysisFunction *func = rz_analysis_get_fcn_in(core->analysis, core->offset, RZ_ANALYSIS_FCN_TYPE_NULL);
@@ -76,12 +76,12 @@ static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
 		return RZ_CMD_STATUS_OK;
 		}
 	// glibc has this nice function that does not return. Because of that, it need to be handled as a ret
-	RAnalFunction *__libc_fatal = r_anal_fcn_find_name(core->anal, "sym.__libc_fatal");
+	RzAnalysisFunction *__libc_fatal = rz_analysis_get_function_byname(core->analysis, "sym.__libc_fatal");
 	if (__libc_fatal == NULL) {
 		eprintf (BRED "[*]" RED "Can't find __libc_fatal. Is this file a glibc?\n" CRESET);
 		return true;
 		}
-	eprintf(BGRN "[*]" GRN " __libc_fatal is at 0x%08lx \n", __libc_fatal->addr);
+	eprintf(BGRN "[*]" GRN " __libc_fatal is at 0x%08llx \n", __libc_fatal->addr);
 	ut64 fcnlsize = rz_analysis_function_linear_size(func);
 	struct exec_item f = {};
 	f.base_address=core->offset;
@@ -104,7 +104,7 @@ static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
 			}
 		DBG_PRINT("before\n");
 		DBG_PRINT_HEX_TEXT(&f);
-		patch_calls(&f);
+		patch_calls(&f, __libc_fatal->addr);
 		DBG_PRINT("after\n");
 		DBG_PRINT_HEX_TEXT(&f);
 		if ((root=build_cfg(&f))) {

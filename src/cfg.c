@@ -230,7 +230,6 @@ struct Block *build_cfg(struct exec_item *f) {
 				if (strcmp(insn[i].mnemonic, "jmp")) {
 					DBG_PRINT("[%d] Hit Block termination @0x%08lx set forward_addr=0x%08lx\n", blk_cnt, insn[i].address, insn[i+1].address);
 					if (!current->ret) current->forward_addr=insn[i+1].address;
-					patch_instr(&insn[i], f);//<<<
 					}
 				if ((app=(struct Block *) malloc(sizeof(struct Block)))==NULL){
 					printf("Error Allocating memory\n");
