@@ -12,7 +12,7 @@ RIZIN_LOCAL_PLUGIN = ~/.local/lib64/rizin/plugins
 PLUGIN_SRC = plugin/r2pi_sysno_main.c
 BUILD_DIR = build
 
-DEBUG=_debug
+#DEBUG=_debug
 
 all:
 	@echo no action use "plugin or demo".

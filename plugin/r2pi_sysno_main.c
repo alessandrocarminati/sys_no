@@ -69,19 +69,19 @@ RAnalFunction *r_anal_fcn_find_name(RAnal *anal, const char *name) {
 }
 */
 static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
-	eprintf(BGRN "[*]" GRN " sysno is starting computation\n");
+//	eprintf(BGRN "[*]" GRN " sysno is starting computation\n");
 	RzAnalysisFunction *func = rz_analysis_get_fcn_in(core->analysis, core->offset, RZ_ANALYSIS_FCN_TYPE_NULL);
 	if (!func) {
-		eprintf (BRED "[*]" RED "no anal data, please run analysis before calling this\n" CRESET);
+//		eprintf (BRED "[*]" RED "no anal data, please run analysis before calling this\n" CRESET);
 		return RZ_CMD_STATUS_OK;
 		}
-	// glibc has this nice function that does not return. Because of that, it need to be handled as a ret
+//	glibc has this nice function that does not return. Because of that, it need to be handled as a ret
 	RzAnalysisFunction *__libc_fatal = rz_analysis_get_function_byname(core->analysis, "sym.__libc_fatal");
 	if (__libc_fatal == NULL) {
-		eprintf (BRED "[*]" RED "Can't find __libc_fatal. Is this file a glibc?\n" CRESET);
+		//eprintf (BRED "[*]" RED "Can't find __libc_fatal. Is this file a glibc?\n" CRESET);
 		return true;
 		}
-	eprintf(BGRN "[*]" GRN " __libc_fatal is at 0x%08llx \n", __libc_fatal->addr);
+//	eprintf(BGRN "[*]" GRN " __libc_fatal is at 0x%08llx \n", __libc_fatal->addr);
 	ut64 fcnlsize = rz_analysis_function_linear_size(func);
 	struct exec_item f = {};
 	f.base_address=core->offset;
@@ -115,18 +115,19 @@ static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
 			free(tmp_buf);
 #endif
 			if (root == NULL) {
-				eprintf(BRED "[*]" RED " Function disassembly failed!!!\n" CRESET);
+//				eprintf(BRED "[*]" RED " Function disassembly failed!!!\n" CRESET);
+				return RZ_CMD_STATUS_OK;
 			}
 			else {
-				eprintf(BGRN "[*]" GRN " Generating cfg for the given function\n" CRESET);
+				//eprintf(BGRN "[*]" GRN " Generating cfg for the given function\n" CRESET);
 				while (search_next(root, HOST_ADDRESS, &v, &p, 0, &tmp)!=NO_FOUND) {
-					eprintf(BGRN "[*]" GRN " checking a path\n" CRESET);
-					for (int i=0; i<p.blocks_no; i++) {
-						eprintf(YEL "0x%08x,", p.blocks_addr[i]->start);
-					}
-					eprintf("\n" CRESET);
+//					eprintf(BGRN "[*]" GRN " checking a path\n" CRESET);
+//					for (int i=0; i<p.blocks_no; i++) {
+//						eprintf(YEL "0x%08x,", p.blocks_addr[i]->start);
+//					}
+//					eprintf("\n" CRESET);
 					if (execute_block_seq(&f, &p, sys_res)) {
-						eprintf(BRED "[*]" RED " Premature termination!!!\n" CRESET);
+//						eprintf(BRED "[*]" RED " Premature termination!!!\n" CRESET);
 						free(v.blocks);
 						free(p.blocks);
 						dispose_cfg(root);
@@ -136,20 +137,21 @@ static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
 					if (sys_res->num>0)
 						patch_syscall_at(&f, sys_res->addr[sys_res->num - 1]);
 				}
-				eprintf(BYEL "[*]" YEL " Syscall found are %d, cfg results are %d, there are %d still to figure out.!!!\n" CRESET, f.syscalls, sys_res->num, f.syscalls - sys_res->num);
+//				eprintf(BYEL "[*]" YEL " Syscall found are %d, cfg results are %d, there are %d still to figure out.!!!\n" CRESET, f.syscalls, sys_res->num, f.syscalls - sys_res->num);
 
 				for (unsigned int i=0; i<f.syscalls; i++){
-					eprintf(BYEL "[*]" YEL " %s block at 0x%08lx syscall at 0x%08lx is %s\n" CRESET, 
-						f.syscall_map[i].used?"Skip":"Process", f.syscall_map[i].blk_address, f.syscall_map[i].sys_address, f.syscall_map[i].used?"known":"unknown");
+//					eprintf(BYEL "[*]" YEL " %s block at 0x%08lx syscall at 0x%08lx is %s\n" CRESET, 
+//						f.syscall_map[i].used?"Skip":"Process", f.syscall_map[i].blk_address, f.syscall_map[i].sys_address, f.syscall_map[i].used?"known":"unknown");
 					if (!f.syscall_map[i].used) {
-						int found = execute_single_block(&f, find_block_from_addr(root, f.syscall_map[i].blk_address), sys_res);
-						printf("%s", found?BGRN "[*]" GRN " New syscall number!\n" CRESET:BRED "[*]" RED " no luck!!!\n" CRESET);
+//						int found = execute_single_block(&f, find_block_from_addr(root, f.syscall_map[i].blk_address), sys_res);
+						execute_single_block(&f, find_block_from_addr(root, f.syscall_map[i].blk_address), sys_res);
+//						printf("%s", found?BGRN "[*]" GRN " New syscall number!\n" CRESET:BRED "[*]" RED " no luck!!!\n" CRESET);
 					}
 				}
 
-				buf=print_res(sys_res, "{address: \"0x%08lx\", number:\"%d\"}");
-				eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
-				eprintf("%s\n", buf);
+				buf=print_res(sys_res, "0x%08lx\t%d\n");
+//				eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
+				eprintf("%s", buf);
 				putchar(0); // from marcin
 			}
 			free(v.blocks);
@@ -157,7 +159,7 @@ static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
 			dispose_cfg(root);
 			dispose_res(sys_res, buf);
 		} else {
-			eprintf(BRED "[*]" RED " Analysis failed due to an error!\n" CRESET);
+//			eprintf(BRED "[*]" RED " Analysis failed due to an error!\n" CRESET);
 			free(v.blocks);
 			free(p.blocks);
 			dispose_cfg(root);
@@ -165,13 +167,13 @@ static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
 			return RZ_CMD_STATUS_ERROR;
 			}
 	}
-	eprintf("\n");
+//	eprintf("\n");
 	free(f.text);
 	return RZ_CMD_STATUS_OK;
 }
 
 static bool sysno_init(RzCore *core) {
-	eprintf("[*] Sysno initialization...\n");
+//	eprintf("[*] Sysno initialization...\n");
 	RzCmd *rcmd = core->rcmd;
 	RzCmdDesc *root_cd = rz_cmd_get_root(rcmd);
 	if (!root_cd) {
@@ -188,7 +190,7 @@ static bool sysno_init(RzCore *core) {
 }
 
 static bool sysno_fini(RzCore *core) {
-	eprintf("[*] Sysno deinitialization...\n");
+//	eprintf("[*] Sysno deinitialization...\n");
 	return true;
 }
 
