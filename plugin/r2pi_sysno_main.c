@@ -151,7 +151,7 @@ static RzCmdStatus do_sysno(RzCore* core, int argc, const char **argv) {
 
 				buf=print_res(sys_res, "0x%08lx\t%d\n");
 //				eprintf(BGRN "[*]" GRN " Results:\n" CRESET);
-				eprintf("%s", buf);
+				printf("%s", buf);
 				putchar(0); // from marcin
 			}
 			free(v.blocks);
